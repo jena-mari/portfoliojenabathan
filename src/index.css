@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #F3EEE1;
+  --color-paper-dark: #E7DEC5;
+  --color-paper-line: #D8CCA9;
+  --color-ink: #2A2A22;
+  --color-ink-soft: #565143;
+  --color-olive: #7C8C52;
+  --color-olive-deep: #556237;
+  --color-window: #AFC0CA;
+  --color-sky: #D3DFE4;
+  --color-stamp: #B3402C;
+  --color-stamp-deep: #8C2E1E;
+  --color-twine: #C0972B;
+  --color-cream-card: #FBF7EC;
+
+  --font-display: "Fraunces", serif;
+  --font-mono: "Space Mono", monospace;
+  --font-sans: "Work Sans", sans-serif;
+
+  --shadow-postal: 0 10px 30px rgba(42,42,34,0.18);
+  --shadow-postal-lg: 0 18px 34px rgba(20,26,10,0.35);
+
+  --ease-postal: cubic-bezier(.22,.9,.32,1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-stamp);
+  color: var(--color-paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-stamp);
+  outline-offset: 3px;
+}
+
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-200px); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+@keyframes scrolldown {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  50.1% { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+.animate-drift-slow { animation: drift 60s linear infinite; }
+.animate-drift-fast { animation: drift 34s linear infinite reverse; }
+.animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+.animate-scrolldown { animation: scrolldown 1.6s ease-in-out infinite; }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity .8s var(--ease-postal), transform .8s var(--ease-postal);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pc-scene { perspective: 1400px; touch-action: none; }
+.pc-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .6s var(--ease-postal);
+}
+.pc-inner.is-flipped { transform: rotateY(180deg); }
+.pc-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+.pc-face-back { transform: rotateY(180deg); }
+
+.ruled-lines {
+  background-image: repeating-linear-gradient(to bottom, transparent, transparent 21px, var(--color-paper-line) 22px);
+}
+.ruled-lines-lg {
+  background-image: repeating-linear-gradient(to bottom, transparent, transparent 33px, var(--color-paper-line) 34px);
+}
+
+.hatch-placeholder {
+  background-image: repeating-linear-gradient(45deg, #eee6d0, #eee6d0 12px, #e6dcc0 12px, #e6dcc0 24px);
+}
+.hatch-placeholder-lg {
+  background-image: repeating-linear-gradient(135deg, #cfd6ba, #cfd6ba 10px, #c3cbaa 10px, #c3cbaa 20px);
+}
+
+.tag-clip {
+  clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.hero-bg {
+  background: radial-gradient(ellipse 120% 60% at 50% 0%, #E4EBEE 0%, var(--color-sky) 55%, var(--color-window) 100%);
+}
+.window-frame {
+  border: 14px solid var(--color-paper);
+  box-shadow: inset 0 0 0 2px rgba(42,42,34,0.12), var(--shadow-postal);
+}
+.projects-bg {
+  background-color: var(--color-olive);
+  background-image: radial-gradient(ellipse 90% 40% at 20% 0%, rgba(255,255,255,0.08), transparent 60%);
+}
+.contact-back {
+  background: linear-gradient(90deg, var(--color-cream-card) 0%, var(--color-cream-card) 60%, #F4EEDE 60%, #F4EEDE 100%);
+}
+.kicker-dash::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  display: inline-block;
+}
