@@ -44,8 +44,8 @@ export default function Journey() {
         </Reveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {stamps.map((s) => (
-            <Reveal key={s.title}>
+          {stamps.map((s, i) => (
+            <Reveal key={s.title} direction="stamp" delay={i * 0.1} duration={0.55}>
               <div
                 style={{ transform: `rotate(${s.rot}deg)` }}
                 className="border-2 border-dashed border-paper/35 rounded-md px-5.5 py-6 bg-paper/[0.03] transition-all duration-300 hover:rotate-0 hover:bg-paper/[0.06]"

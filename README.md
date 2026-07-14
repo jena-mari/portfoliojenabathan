@@ -48,4 +48,17 @@ src/
 
 - Postcards are draggable and flippable on screens ≥760px; below that they
   stack vertically and flip on tap.
-- Respects `prefers-reduced-motion`.
+- Respects `prefers-reduced-motion` throughout, including the intro doors.
+- Section entrances (`Reveal`) use Framer Motion — see `src/components/Reveal.jsx`
+  for the available `direction` values (`up`, `down`, `left`, `right`, `scale`, `stamp`)
+  and pass `delay`/`duration` to stagger groups of items.
+
+## Hero media
+
+- `public/items/photo-1.png` — your polaroid photo.
+- `public/items/hero-background.MOV` — the moving-train footage behind the window.
+  It's cropped with `object-fit: cover`, color-graded to match the palette, and
+  given a slow Ken Burns zoom (see `.hero-video` in `src/index.css`). Since the
+  source is portrait, cover-cropping will show a centered vertical slice — adjust
+  `object-position` in `Hero.jsx` if you want to shift which part of the frame shows.
+  See `public/items/README.md` for a note on `.MOV` browser support.

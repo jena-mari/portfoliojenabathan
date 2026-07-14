@@ -87,8 +87,8 @@ export default function Postcard({ project, layout, scattered }) {
       ref={cardRef}
       onClick={() => !scattered && setFlipped((f) => !f)}
       style={style}
-      className={`pc-scene w-full max-w-[400px] aspect-[3/2] mx-auto select-none transition-opacity duration-700 ${
-        visible ? "opacity-100" : "opacity-0"
+      className={`pc-scene w-full max-w-[400px] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
+        visible ? "opacity-100 blur-0" : "opacity-0 blur-sm"
       }`}
     >
       <div className={`pc-inner ${flipped ? "is-flipped" : ""}`}>

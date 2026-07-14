@@ -28,7 +28,7 @@ export default function Projects() {
   return (
     <section id="projects" className="projects-bg py-28 text-paper relative">
       <div className="max-w-[1180px] mx-auto px-8">
-        <Reveal className="max-w-xl mb-14">
+        <Reveal className="max-w-xl mb-14" direction="left">
           <span className="kicker-dash font-mono text-xs text-twine flex items-center gap-2.5 mb-3.5">
             projects &amp; works
           </span>

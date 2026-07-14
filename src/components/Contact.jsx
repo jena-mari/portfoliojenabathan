@@ -10,14 +10,14 @@ export default function Contact() {
   return (
     <section id="contact" className="py-28 bg-paper-dark">
       <div className="max-w-[1180px] mx-auto px-8">
-        <Reveal className="mb-14">
+        <Reveal className="mb-14" direction="right">
           <span className="kicker-dash font-mono text-xs text-stamp flex items-center gap-2.5 mb-3.5">say hello</span>
           <h2 className="font-display font-semibold text-[clamp(1.9rem,4vw,2.9rem)]">
             Wish you were here — let's talk.
           </h2>
         </Reveal>
 
-        <Reveal>
+        <Reveal direction="scale" delay={0.1}>
           <div className="bg-cream-card shadow-postal rounded-md overflow-hidden grid grid-cols-1 md:grid-cols-[1.3fr_1fr]">
             <div className="ruled-lines-lg p-10 md:p-12">
               <p className="font-display italic text-lg leading-[34px] text-ink-soft max-w-md">
