@@ -1,37 +1,51 @@
-// Seamlessly-looping cloud layers — pure SVG/CSS, no image assets needed.
-// Each cloud is built from overlapping circles (not stretched ellipses) so it
-// stays round and puffy; sizing uses a uniform `scale()` transform rather
-// than mismatched width/height, which is what was flattening them before.
+import { useId } from "react"
+
+// Seamlessly-looping cloud layers. Same trick as the classic "tile a cloud
+// PNG and animate background-position" technique, but since we don't have a
+// photographic cloud asset to tile, each cloud is built from soft radial
+// gradients + a slight blur for a fluffy, feathered-edge look instead of
+// flat vector shapes.
 const TILE_WIDTH = 1600
 
 const layers = [
-  { duration: 70, opacity: 0.9, scale: 1, top: "4%" },
-  { duration: 50, opacity: 0.85, scale: 0.7, top: "22%" },
-  { duration: 34, opacity: 0.8, scale: 0.48, top: "36%" },
+  { duration: 75, opacity: 0.92, scale: 1, top: "0%" },
+  { duration: 52, opacity: 0.85, scale: 0.7, top: "18%" },
+  { duration: 34, opacity: 0.78, scale: 0.48, top: "32%" },
 ]
 
-function Puff({ cx, cy, r = 44 }) {
+function Puff({ cx, cy, r, gradId }) {
   return (
     <g>
-      <ellipse cx={cx} cy={cy + r * 0.55} rx={r * 1.9} ry={r * 0.55} fill="#EAF3FB" opacity="0.7" />
-      <circle cx={cx - r * 1.15} cy={cy + r * 0.35} r={r * 0.62} fill="#ffffff" />
-      <circle cx={cx - r * 0.5} cy={cy - r * 0.25} r={r * 0.85} fill="#ffffff" />
-      <circle cx={cx + r * 0.15} cy={cy - r * 0.5} r={r} fill="#ffffff" />
-      <circle cx={cx + r * 0.95} cy={cy - r * 0.15} r={r * 0.78} fill="#ffffff" />
-      <circle cx={cx + r * 1.55} cy={cy + r * 0.3} r={r * 0.5} fill="#ffffff" />
-      <ellipse cx={cx} cy={cy + r * 0.45} rx={r * 1.7} ry={r * 0.42} fill="#ffffff" />
+      <ellipse cx={cx} cy={cy + r * 0.7} rx={r * 1.7} ry={r * 0.4} fill="#5B7FA6" opacity="0.1" />
+      <circle cx={cx - r * 1.1} cy={cy + r * 0.3} r={r * 0.6} fill={`url(#${gradId})`} />
+      <circle cx={cx - r * 0.45} cy={cy - r * 0.3} r={r * 0.82} fill={`url(#${gradId})`} />
+      <circle cx={cx + r * 0.2} cy={cy - r * 0.55} r={r} fill={`url(#${gradId})`} />
+      <circle cx={cx + r * 0.95} cy={cy - r * 0.2} r={r * 0.75} fill={`url(#${gradId})`} />
+      <circle cx={cx + r * 1.5} cy={cy + r * 0.25} r={r * 0.48} fill={`url(#${gradId})`} />
     </g>
   )
 }
 
 function CloudTile({ width }) {
+  const uid = useId()
+  const gradId = `cloud-grad-${uid}`
+
   return (
     <svg width={width} viewBox="0 0 1600 260" className="block" style={{ overflow: "visible" }}>
-      <Puff cx={140} cy={110} r={46} />
-      <Puff cx={430} cy={70} r={60} />
-      <Puff cx={760} cy={130} r={38} />
-      <Puff cx={1040} cy={85} r={52} />
-      <Puff cx={1340} cy={120} r={42} />
+      <defs>
+        <radialGradient id={gradId} cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+          <stop offset="55%" stopColor="#ffffff" stopOpacity="0.96" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.6" />
+        </radialGradient>
+      </defs>
+      <g style={{ filter: "blur(3px)" }}>
+        <Puff cx={140} cy={110} r={48} gradId={gradId} />
+        <Puff cx={430} cy={70} r={62} gradId={gradId} />
+        <Puff cx={760} cy={130} r={40} gradId={gradId} />
+        <Puff cx={1040} cy={85} r={54} gradId={gradId} />
+        <Puff cx={1340} cy={120} r={44} gradId={gradId} />
+      </g>
     </svg>
   )
 }
