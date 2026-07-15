@@ -16,11 +16,11 @@
   --color-cream-card: #FBF7EC;
   --color-tech-sky: #CCE6FC;
 
-  --font-display: "Fraunces", serif;
-  --font-mono: "Space Mono", monospace;
-  --font-sans: "Work Sans", sans-serif;
-  --font-advercase: "Advercase", "Fraunces", serif;
-  --font-google: "Google Sans", "Work Sans", sans-serif;
+  --font-display: "Advercase", serif;
+  --font-mono: "Google Sans", sans-serif;
+  --font-sans: "Google Sans", sans-serif;
+  --font-advercase: "Advercase", serif;
+  --font-google: "Google Sans", sans-serif;
 
   --shadow-postal: 0 10px 30px rgba(42,42,34,0.18);
   --shadow-postal-lg: 0 18px 34px rgba(20,26,10,0.35);
@@ -35,6 +35,7 @@ html {
 body {
   background: var(--color-paper);
   color: var(--color-ink);
+  font-family: var(--font-google);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -177,4 +178,14 @@ body {
 .hero-video {
   animation: kenburns 26s ease-in-out infinite;
   filter: saturate(0.85) contrast(1.05) brightness(0.9);
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.cloud-drift {
+  animation-name: cloud-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }

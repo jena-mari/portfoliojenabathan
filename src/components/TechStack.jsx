@@ -1,59 +1,39 @@
 import Reveal from "./Reveal"
+import Clouds from "./Clouds"
 
 const categories = [
   {
     title: "languages",
-    tone: "light",
     items: ["Python", "Java", "Javascript", "C#", "Typescript", "C++", "SQL", "HTML", "CSS"],
   },
   {
     title: "frontend",
-    tone: "sky",
     items: ["React", "Vite", "Tailwind CSS", "JavaFX", "Material Tailwind", "React Router", "Responsive UI Development"],
   },
   {
     title: "backend/APIs",
-    tone: "sky",
     items: ["Spring Boot", "REST APIs", "Express.js", "dotenv", "localStorage-based persistence"],
   },
   {
     title: "AI/Machine Learning",
-    tone: "grass",
     items: ["Pandas", "NumPy", "Matplotlib", "Seaborn", "RapidMiner", "Excel", "Statistical Analysis", "Gemini API"],
   },
   {
     title: "tools/DevOps",
-    tone: "grass",
     items: ["Docker", "Git/GitHub", "Agentic AI", "Vercel", "npm", "PostgreSQL", "PostCSS", "Autoprefixer"],
   },
   {
     title: "design & UI/UX",
-    tone: "grass",
     items: ["Figma", "UI/UX Design", "Prototyping", "Canva", "Procreate", "Custom Theming", "Visual Interface Design"],
   },
 ]
 
-const toneStyles = {
-  light: {
-    card: "bg-white/95 border border-white/60",
-    heading: "text-ink",
-    pill: "bg-[#E4ECF6] text-ink",
-  },
-  sky: {
-    card: "bg-white/20 backdrop-blur-xl border border-white/40",
-    heading: "text-white",
-    pill: "bg-white/90 text-ink",
-  },
-  grass: {
-    card: "bg-gradient-to-b from-white/35 to-white/10 backdrop-blur-xl border border-white/40",
-    heading: "text-white",
-    pill: "bg-white/90 text-ink",
-  },
-}
-
 export default function TechStack() {
   return (
     <section id="stack" className="relative py-28 overflow-hidden bg-tech-sky">
+      {/* moving clouds — sit behind the grass photo, so they only show over the sky */}
+      <Clouds />
+
       {/* grass photo anchored to the bottom of the section */}
       <img
         src="/items/greenery.PNG"
@@ -78,28 +58,25 @@ export default function TechStack() {
         </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {categories.map((cat, i) => {
-            const tone = toneStyles[cat.tone]
-            return (
-              <Reveal key={cat.title} delay={i * 0.07}>
-                <div className={`rounded-[28px] p-7 shadow-[0_8px_32px_rgba(31,41,55,0.15)] transition-transform duration-300 hover:-translate-y-1.5 ${tone.card}`}>
-                  <h3 className={`font-google font-bold uppercase tracking-wide text-xl mb-4 ${tone.heading}`}>
-                    {cat.title}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.items.map((item) => (
-                      <span
-                        key={item}
-                        className={`font-google text-sm font-semibold px-3.5 py-1.5 rounded-full ${tone.pill}`}
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
+          {categories.map((cat, i) => (
+            <Reveal key={cat.title} delay={i * 0.07}>
+              <div className="group rounded-[28px] p-7 border border-white/40 bg-white/20 backdrop-blur-xl shadow-[0_8px_32px_rgba(31,41,55,0.15)] transition-all duration-500 hover:-translate-y-1.5 hover:bg-white/95 hover:border-white/70">
+                <h3 className="font-google font-bold uppercase tracking-wide text-xl mb-4 text-white transition-colors duration-500 group-hover:text-ink">
+                  {cat.title}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {cat.items.map((item) => (
+                    <span
+                      key={item}
+                      className="font-google text-sm font-semibold px-3.5 py-1.5 rounded-full bg-white/90 text-ink"
+                    >
+                      {item}
+                    </span>
+                  ))}
                 </div>
-              </Reveal>
-            )
-          })}
+              </div>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
