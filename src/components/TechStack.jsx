@@ -1,5 +1,6 @@
 import Reveal from "./Reveal"
 import Clouds from "./Clouds"
+import Hills from "./Hills"
 
 const categories = [
   {
@@ -34,13 +35,9 @@ export default function TechStack() {
       {/* moving clouds — sit behind the grass photo, so they only show over the sky */}
       <Clouds />
 
-      {/* grass photo anchored to the bottom of the section */}
-      <img
-        src="/items/greenery.PNG"
-        alt=""
-        aria-hidden="true"
-        className="absolute bottom-0 left-0 w-full h-[56%] object-cover object-top pointer-events-none select-none"
-      />
+      {/* rolling hills — CSS/SVG, with your grass photo blended on top as texture */}
+      <Hills />
+
       {/* soft blend so the sky color eases into the grass photo */}
       <div
         className="absolute left-0 right-0 top-[30%] h-40 bg-gradient-to-b from-tech-sky to-transparent pointer-events-none"
