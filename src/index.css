@@ -14,10 +14,13 @@
   --color-stamp-deep: #8C2E1E;
   --color-twine: #C0972B;
   --color-cream-card: #FBF7EC;
+  --color-tech-sky: #CCE6FC;
 
   --font-display: "Fraunces", serif;
   --font-mono: "Space Mono", monospace;
   --font-sans: "Work Sans", sans-serif;
+  --font-advercase: "Advercase", "Fraunces", serif;
+  --font-google: "Google Sans", "Work Sans", sans-serif;
 
   --shadow-postal: 0 10px 30px rgba(42,42,34,0.18);
   --shadow-postal-lg: 0 18px 34px rgba(20,26,10,0.35);
@@ -54,6 +57,21 @@ body {
   opacity: 0.045;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@font-face {
+  font-family: "Advercase";
+  src: url("/fonts/AdvercaseFont-Demo-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Advercase";
+  src: url("/fonts/AdvercaseFont-Demo-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 @keyframes drift {

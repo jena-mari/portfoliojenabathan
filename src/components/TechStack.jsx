@@ -3,72 +3,103 @@ import Reveal from "./Reveal"
 const categories = [
   {
     title: "languages",
-    note: "what I think in",
-    items: ["Python", "Java", "JavaScript", "TypeScript", "C++", "SQL", "HTML", "CSS"],
+    tone: "light",
+    items: ["Python", "Java", "Javascript", "C#", "Typescript", "C++", "SQL", "HTML", "CSS"],
   },
   {
     title: "frontend",
-    note: "what I build interfaces with",
-    items: ["React", "Vite", "Material UI", "JavaFX", "React Router", "Responsive UI"],
+    tone: "sky",
+    items: ["React", "Vite", "Tailwind CSS", "JavaFX", "Material Tailwind", "React Router", "Responsive UI Development"],
   },
   {
-    title: "backend / apis",
-    note: "what runs underneath",
-    items: ["Spring Boot", "REST APIs", "Express", "Local Storage Persistence"],
+    title: "backend/APIs",
+    tone: "sky",
+    items: ["Spring Boot", "REST APIs", "Express.js", "dotenv", "localStorage-based persistence"],
   },
   {
-    title: "ai / machine learning",
-    note: "what I use to make sense of data",
+    title: "AI/Machine Learning",
+    tone: "grass",
     items: ["Pandas", "NumPy", "Matplotlib", "Seaborn", "RapidMiner", "Excel", "Statistical Analysis", "Gemini API"],
   },
   {
-    title: "tools / devops",
-    note: "how it ships",
-    items: ["Docker", "Git / GitHub", "Vercel", "PostgreSQL", "MySQL"],
+    title: "tools/DevOps",
+    tone: "grass",
+    items: ["Docker", "Git/GitHub", "Agentic AI", "Vercel", "npm", "PostgreSQL", "PostCSS", "Autoprefixer"],
   },
   {
-    title: "design / ui-ux",
-    note: "where it starts",
-    items: ["Figma", "UI/UX Design", "Prototyping", "Canva", "Procreate", "Custom Branding"],
+    title: "design & UI/UX",
+    tone: "grass",
+    items: ["Figma", "UI/UX Design", "Prototyping", "Canva", "Procreate", "Custom Theming", "Visual Interface Design"],
   },
 ]
 
+const toneStyles = {
+  light: {
+    card: "bg-white/95 border border-white/60",
+    heading: "text-ink",
+    pill: "bg-[#E4ECF6] text-ink",
+  },
+  sky: {
+    card: "bg-white/20 backdrop-blur-xl border border-white/40",
+    heading: "text-white",
+    pill: "bg-white/90 text-ink",
+  },
+  grass: {
+    card: "bg-gradient-to-b from-white/35 to-white/10 backdrop-blur-xl border border-white/40",
+    heading: "text-white",
+    pill: "bg-white/90 text-ink",
+  },
+}
+
 export default function TechStack() {
   return (
-    <section id="stack" className="py-28">
-      <div className="max-w-[1180px] mx-auto px-8">
-        <Reveal className="max-w-xl mb-14">
-          <span className="kicker-dash font-mono text-xs text-stamp flex items-center gap-2.5 mb-3.5">
+    <section id="stack" className="relative py-28 overflow-hidden bg-tech-sky">
+      {/* grass photo anchored to the bottom of the section */}
+      <img
+        src="/items/greenery.PNG"
+        alt=""
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 w-full h-[56%] object-cover object-top pointer-events-none select-none"
+      />
+      {/* soft blend so the sky color eases into the grass photo */}
+      <div
+        className="absolute left-0 right-0 top-[30%] h-40 bg-gradient-to-b from-tech-sky to-transparent pointer-events-none"
+        aria-hidden="true"
+      />
+
+      <div className="max-w-[1180px] mx-auto px-8 relative z-10">
+        <Reveal className="mb-14">
+          <h2 className="font-advercase font-bold text-ink text-[clamp(2.6rem,6vw,4.4rem)] leading-none drop-shadow-[3px_4px_0_rgba(0,0,0,0.12)]">
             my tech stack
-          </span>
-          <h2 className="font-display font-semibold text-[clamp(1.9rem,4vw,2.9rem)]">
-            Tools and technologies I actually reach for.
           </h2>
-          <p className="mt-3 text-ink-soft text-[15.5px] max-w-md">
-            Not a resume dump — this is what's genuinely in rotation, sorted like a card catalogue.
+          <p className="font-google font-semibold text-ink mt-4 text-[15px]">
+            tools and technologies i have worked and work with.
           </p>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((cat, i) => (
-            <Reveal key={cat.title} delay={i * 0.07}>
-              <div className="bg-cream-card border border-paper-line rounded-sm px-6 pt-7 pb-6 relative shadow-[0_6px_0_-2px_rgba(42,42,34,0.05),0_8px_18px_rgba(42,42,34,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:-rotate-[0.6deg] hover:shadow-[0_18px_30px_rgba(42,42,34,0.14)]">
-                <span
-                  className="absolute top-2.5 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-paper shadow-[inset_0_2px_3px_rgba(0,0,0,0.18),0_0_0_1px_var(--color-paper-line)]"
-                  aria-hidden="true"
-                />
-                <h3 className="font-mono lowercase text-base mb-1">{cat.title}</h3>
-                <p className="text-xs text-ink-soft italic mb-4">{cat.note}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {cat.items.map((item) => (
-                    <span key={item} className="text-xs px-2.5 py-1.5 rounded-full bg-paper border border-paper-line">
-                      {item}
-                    </span>
-                  ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {categories.map((cat, i) => {
+            const tone = toneStyles[cat.tone]
+            return (
+              <Reveal key={cat.title} delay={i * 0.07}>
+                <div className={`rounded-[28px] p-7 shadow-[0_8px_32px_rgba(31,41,55,0.15)] transition-transform duration-300 hover:-translate-y-1.5 ${tone.card}`}>
+                  <h3 className={`font-google font-bold uppercase tracking-wide text-xl mb-4 ${tone.heading}`}>
+                    {cat.title}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {cat.items.map((item) => (
+                      <span
+                        key={item}
+                        className={`font-google text-sm font-semibold px-3.5 py-1.5 rounded-full ${tone.pill}`}
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Reveal>
-          ))}
+              </Reveal>
+            )
+          })}
         </div>
       </div>
     </section>
