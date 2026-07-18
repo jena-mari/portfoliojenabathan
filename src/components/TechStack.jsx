@@ -1,6 +1,5 @@
 import Reveal from "./Reveal"
 import Clouds from "./Clouds"
-import Hills from "./Hills"
 
 const categories = [
   {
@@ -31,18 +30,8 @@ const categories = [
 
 export default function TechStack() {
   return (
-    <section id="stack" className="relative py-28 overflow-hidden bg-tech-sky">
-      {/* moving clouds — sit behind the grass photo, so they only show over the sky */}
+    <section id="stack" className="relative min-h-screen py-28 overflow-hidden bg-tech-sky">
       <Clouds />
-
-      {/* rolling hills — CSS/SVG, with your grass photo blended on top as texture */}
-      <Hills />
-
-      {/* soft blend so the sky color eases into the grass photo */}
-      <div
-        className="absolute left-0 right-0 top-[30%] h-40 bg-gradient-to-b from-tech-sky to-transparent pointer-events-none"
-        aria-hidden="true"
-      />
 
       <div className="max-w-[1180px] mx-auto px-8 relative z-10">
         <Reveal className="mb-14">

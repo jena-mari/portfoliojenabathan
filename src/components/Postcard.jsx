@@ -87,35 +87,41 @@ export default function Postcard({ project, layout, scattered }) {
       ref={cardRef}
       onClick={() => !scattered && setFlipped((f) => !f)}
       style={style}
-      className={`pc-scene w-full max-w-[400px] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
+      className={`pc-scene w-full max-w-[min(520px,92vw)] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
         visible ? "opacity-100 blur-0" : "opacity-0 blur-sm"
       }`}
     >
       <div className={`pc-inner ${flipped ? "is-flipped" : ""}`}>
         {/* front */}
-        <div className="pc-face bg-cream-card rounded-sm shadow-postal-lg p-5 flex flex-col text-ink">
-          <div className="hatch-placeholder flex-1 border-[1.5px] border-dashed border-ink-soft flex items-center justify-center text-center font-mono text-[10.5px] text-ink-soft p-3.5 leading-relaxed relative">
-            <span className="absolute top-2 right-2 w-[30px] h-[30px] rounded-full border-[1.5px] border-stamp-deep opacity-60" />
-            [ project photo/screenshot goes here ]
+        <div className="pc-face pc-paper-face pc-paper-front rounded-[3px] p-6 flex flex-col text-ink">
+          <div className="relative flex-1 overflow-hidden border-[1.5px] border-ink-soft/65 bg-paper-dark">
+            {project.image ? (
+              <img
+                src={project.image}
+                alt={`${project.title} screenshot`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="hatch-placeholder w-full h-full flex items-center justify-center text-center font-mono text-[10.5px] text-ink-soft p-3.5 leading-relaxed">
+                [ project photo/screenshot goes here ]
+              </div>
+            )}
           </div>
-          <div className="flex justify-between items-baseline mt-3">
-            <h3 className="font-display font-semibold text-lg">{project.title}</h3>
-            <span className="font-mono text-[10px] text-ink-soft">{project.tag}</span>
+          <div className="flex justify-between items-baseline gap-4 mt-4">
+            <h3 className="font-display font-semibold text-[1.35rem] leading-none">{project.title}</h3>
+            <span className="font-mono text-[10.5px] text-ink-soft text-right">{project.tag}</span>
           </div>
-          <span className="font-mono text-[10px] text-stamp mt-1">{project.role}</span>
+          <span className="font-mono text-[10.5px] text-stamp mt-1.5">{project.role}</span>
         </div>
 
         {/* back */}
-        <div className="pc-face pc-face-back contact-back rounded-sm shadow-postal-lg p-5 text-ink">
+        <div className="pc-face pc-face-back pc-paper-face pc-paper-back rounded-[3px] p-6 text-ink">
           <div className="flex h-full gap-0">
-            <div className="flex-[1.6] pr-3.5 ruled-lines font-display italic text-[13px] leading-[22px] text-ink-soft overflow-hidden">
+            <div className="flex-[1.6] pr-4 ruled-lines font-display italic text-[14px] leading-[24px] text-ink-soft overflow-hidden">
               {project.message}
             </div>
-            <div className="flex-1 pl-3.5 flex flex-col justify-between">
-              <div className="w-[38px] h-[46px] border-[1.5px] border-dashed border-ink-soft ml-auto mb-2 flex items-center justify-center text-center font-mono text-[7.5px] text-ink-soft leading-tight">
-                postmark
-              </div>
-              <div className="flex flex-col gap-1.5">
+            <div className="flex-1 pl-4 flex flex-col justify-end border-l border-dashed border-paper-line">
+              <div className="flex flex-col gap-2">
                 {project.links.map((link) => (
                   <a
                     key={link.href}
@@ -123,7 +129,7 @@ export default function Postcard({ project, layout, scattered }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="font-mono text-[10px] border border-ink rounded-full px-2.5 py-1.5 inline-flex items-center gap-1.5 self-start transition-colors duration-200 hover:bg-ink hover:text-cream-card"
+                    className="font-mono text-[10.5px] border border-ink rounded-full px-3 py-1.5 inline-flex items-center gap-1.5 self-start transition-colors duration-200 hover:bg-ink hover:text-cream-card"
                   >
                     {link.label} →
                   </a>

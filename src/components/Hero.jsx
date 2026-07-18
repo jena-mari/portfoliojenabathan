@@ -2,50 +2,19 @@ import Reveal from "./Reveal"
 
 export default function Hero() {
   return (
-    <header id="top" className="relative min-h-screen flex items-center overflow-hidden pt-32 pb-20 bg-ink">
-      {/* ---- moving train footage, cropped + tinted to read as a window ---- */}
+    <header id="top" className="relative min-h-screen flex items-center overflow-hidden pt-32 pb-24 bg-ink">
+      {/* ---- moving train footage, cropped lower for a stronger midpoint read ---- */}
       <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
         <video
-          className="hero-video absolute inset-0 w-full h-full object-cover"
+          className="hero-video absolute inset-0 w-full h-full object-cover object-[50%_68%]"
           src="/items/hero-background.MOV"
           autoPlay
           muted
           loop
           playsInline
         />
-        {/* cool color-grade so the footage matches the paper/olive palette */}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(211,223,228,0.35)_0%,rgba(175,192,202,0.25)_55%,rgba(65,77,41,0.35)_100%)] mix-blend-multiply" />
-        {/* vignette */}
-        <div className="absolute inset-0 [background:radial-gradient(ellipse_75%_65%_at_50%_40%,transparent_45%,rgba(20,22,15,0.45)_100%)]" />
-        {/* diagonal glass glare */}
-        <div className="absolute -inset-y-10 -left-1/3 w-2/3 rotate-[8deg] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent)]" />
-      </div>
-
-      {/* ---- window hardware sits above the footage ---- */}
-      {["left", "right"].map((side) => (
-        <div
-          key={side}
-          className={`absolute top-0 w-14 h-[110px] z-[3] pointer-events-none ${side === "left" ? "left-16" : "right-16"}`}
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 56 110" className="w-full h-full">
-            <path d="M28 4 A18 18 0 1 1 27.9 4" fill="none" stroke="#3a3226" strokeWidth="4" opacity="0.5" />
-            <rect x="20" y="60" width="16" height="46" rx="3" fill="#3a3226" opacity="0.5" />
-          </svg>
-        </div>
-      ))}
-
-      <div className="window-frame absolute inset-[18px] rounded-sm pointer-events-none z-[2]" aria-hidden="true" />
-      <div
-        className="hidden md:block absolute top-[18px] bottom-[18px] left-1/2 -ml-[7px] w-3.5 bg-paper shadow-[inset_0_0_0_2px_rgba(42,42,34,0.12)] z-[2] pointer-events-none"
-        aria-hidden="true"
-      />
-
-      <div
-        className="hidden md:flex absolute top-24 right-8 w-[98px] h-[98px] rounded-full border-2 border-stamp text-stamp items-center justify-center text-center font-mono text-[9px] leading-snug rotate-[12deg] z-[6] opacity-85 bg-paper/70 backdrop-blur-sm"
-        aria-hidden="true"
-      >
-        AIR&nbsp;MAIL ★ WOLLONGONG · NSW ★ PAR AVION
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(20,22,15,0.62)_0%,rgba(20,22,15,0.38)_48%,rgba(20,22,15,0.2)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,22,15,0.22)_0%,rgba(20,22,15,0.08)_42%,rgba(20,22,15,0.42)_100%)]" />
       </div>
 
       <div className="max-w-[1180px] mx-auto px-8 w-full relative z-[5]">
@@ -64,7 +33,7 @@ export default function Hero() {
                 />
               </div>
               <div className="absolute bottom-3.5 left-3.5 right-3.5 text-center font-display italic text-[15px] text-ink">
-                jena, on the go
+                this is me! 𐔌՞ ܸ.ˬ.ܸ՞𐦯
               </div>
             </div>
           </Reveal>

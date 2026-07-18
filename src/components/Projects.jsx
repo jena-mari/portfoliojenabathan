@@ -1,19 +1,37 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion"
 import Reveal from "./Reveal"
 import Postcard from "./Postcard"
 import { projects } from "../data/projects"
 
-const layouts = [
-  { top: "0px", left: "2%", rot: -4 },
-  { top: "60px", left: "54%", rot: 3 },
-  { top: "340px", left: "0%", rot: 2.5 },
-  { top: "380px", left: "52%", rot: -3 },
-  { top: "700px", left: "4%", rot: -2 },
-  { top: "740px", left: "50%", rot: 2 },
-]
+const ROW_HEIGHT = 450
+const rotationPattern = [-4, 3, 2.5, -3, -2.5, 2, -3.5, 2.5]
+
+function getLayout(i) {
+  const col = i % 2
+  const row = Math.floor(i / 2)
+  const top = row * ROW_HEIGHT + (col === 1 ? 58 : 0)
+  const left = col === 0 ? `${1 + (row % 2) * 2}%` : `${54 + (row % 2) * 1.5}%`
+  const rot = rotationPattern[i % rotationPattern.length]
+  return { top: `${top}px`, left, rot }
+}
+
+function useScrollEmphasis() {
+  const ref = useRef(null)
+  const reduceMotion = useReducedMotion()
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  })
+  const opacity = useTransform(scrollYProgress, [0, 0.18, 0.82, 1], reduceMotion ? [1, 1, 1, 1] : [0.82, 1, 1, 0.88])
+  const scale = useTransform(scrollYProgress, [0, 0.18, 0.82, 1], reduceMotion ? [1, 1, 1, 1] : [0.985, 1, 1, 0.99])
+
+  return { ref, opacity, scale }
+}
 
 export default function Projects() {
   const [scattered, setScattered] = useState(false)
+  const { ref, opacity, scale } = useScrollEmphasis()
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 760px)")
@@ -26,7 +44,12 @@ export default function Projects() {
   const rows = Math.ceil(projects.length / 2)
 
   return (
-    <section id="projects" className="projects-bg py-28 text-paper relative">
+    <motion.section
+      id="projects"
+      ref={ref}
+      style={{ opacity, scale }}
+      className="snap-section projects-bg py-28 text-paper relative"
+    >
       <div className="max-w-[1180px] mx-auto px-8">
         <Reveal className="max-w-xl mb-14" direction="left">
           <span className="kicker-dash font-mono text-xs text-twine flex items-center gap-2.5 mb-3.5">
@@ -45,14 +68,14 @@ export default function Projects() {
         </p>
 
         <div
-          className={scattered ? "relative" : "grid grid-cols-1 gap-16"}
-          style={scattered ? { minHeight: `${rows * 380 + 60}px` } : undefined}
+          className={scattered ? "relative" : "grid grid-cols-1 gap-20"}
+          style={scattered ? { minHeight: `${rows * ROW_HEIGHT + 60}px` } : undefined}
         >
           {projects.map((project, i) => (
-            <Postcard key={project.title} project={project} layout={layouts[i % layouts.length]} scattered={scattered} />
+            <Postcard key={project.title} project={project} layout={getLayout(i)} scattered={scattered} />
           ))}
         </div>
       </div>
-    </section>
+    </motion.section>
   )
 }
