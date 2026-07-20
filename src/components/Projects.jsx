@@ -44,13 +44,8 @@ export default function Projects() {
   const rows = Math.ceil(projects.length / 2)
 
   return (
-    <motion.section
-      id="projects"
-      ref={ref}
-      style={{ opacity, scale }}
-      className="snap-section projects-bg py-28 text-paper relative"
-    >
-      <div className="max-w-[1180px] mx-auto px-8">
+    <section id="projects" ref={ref} className="py-28 bg-ink text-paper">
+      <motion.div style={{ opacity, scale }} className="max-w-[1180px] mx-auto px-8">
         <Reveal className="max-w-xl mb-14" direction="left">
           <span className="kicker-dash font-mono text-xs text-twine flex items-center gap-2.5 mb-3.5">
             projects &amp; works
@@ -75,7 +70,7 @@ export default function Projects() {
             <Postcard key={project.title} project={project} layout={getLayout(i)} scattered={scattered} />
           ))}
         </div>
-      </div>
-    </motion.section>
+      </motion.div>
+    </section>
   )
 }

@@ -4,6 +4,7 @@ const links = [
   { href: "#stack", label: "stack" },
   { href: "#projects", label: "projects" },
   { href: "#journey", label: "journey" },
+  { href: "#photobooth", label: "photobooth" },
   { href: "#contact", label: "contact" },
 ]
 
@@ -33,12 +34,12 @@ export default function Nav() {
       >
         <img src="/jena-logo.png" alt="" className="w-full h-full object-contain scale-125" />
       </a>
-      <ul className="hidden sm:flex gap-3 list-none m-0 p-0">
+      <ul className="hidden sm:flex gap-2 list-none m-0 p-0">
         {links.map((link) => (
           <li key={link.href}>
             <a
               href={link.href}
-              className={`font-mono text-sm md:text-[15px] font-black lowercase px-4 py-2.5 rounded-full border-2 border-transparent transition-all duration-200 ${linkClass}`}
+              className={`font-mono text-sm md:text-[15px] font-black lowercase px-3.5 py-2.5 rounded-full border-2 border-transparent transition-all duration-200 ${linkClass}`}
             >
               {link.label}
             </a>
