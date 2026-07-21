@@ -1,3 +1,5 @@
+import { useRef } from "react"
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion"
 import Reveal from "./Reveal"
 
 const stamps = [
@@ -27,10 +29,30 @@ const stamps = [
   },
 ]
 
+const stampVariants = {
+  hidden: { opacity: 0, scale: 1.6, rotate: -14 },
+  show: (rot) => ({ opacity: 1, scale: 1, rotate: rot }),
+}
+
+function useScrollEmphasis() {
+  const ref = useRef(null)
+  const reduceMotion = useReducedMotion()
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  })
+  const opacity = useTransform(scrollYProgress, [0, 0.18, 0.82, 1], reduceMotion ? [1, 1, 1, 1] : [0.82, 1, 1, 0.88])
+  const scale = useTransform(scrollYProgress, [0, 0.18, 0.82, 1], reduceMotion ? [1, 1, 1, 1] : [0.985, 1, 1, 0.99])
+
+  return { ref, opacity, scale }
+}
+
 export default function Journey() {
+  const { ref, opacity, scale } = useScrollEmphasis()
+
   return (
-    <section id="journey" className="py-28 bg-ink text-paper">
-      <div className="max-w-[1180px] mx-auto px-8">
+    <section id="journey" ref={ref} className="py-28 bg-ink text-paper">
+      <motion.div style={{ opacity, scale }} className="max-w-[73.75rem] mx-auto px-8">
         <Reveal className="max-w-xl mb-14">
           <span className="kicker-dash font-mono text-xs text-[#D9C88B] flex items-center gap-2.5 mb-3.5">
             the journey so far
@@ -38,26 +60,31 @@ export default function Journey() {
           <h2 className="font-display font-semibold text-[clamp(1.9rem,4vw,2.9rem)] text-paper">
             Stamps collected along the way.
           </h2>
-          <p className="mt-3 text-[#B9B6A6] text-[15.5px] max-w-md">
+          <p className="mt-3 text-[#B9B6A6] text-[0.96875rem] max-w-md">
             A passport page of sorts — the milestones behind the projects above.
           </p>
         </Reveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {stamps.map((s, i) => (
-            <Reveal key={s.title} direction="stamp" delay={i * 0.1} duration={0.55}>
-              <div
-                style={{ transform: `rotate(${s.rot}deg)` }}
-                className="border-2 border-dashed border-paper/35 rounded-md px-5.5 py-6 bg-paper/[0.03] transition-all duration-300 hover:rotate-0 hover:bg-paper/[0.06]"
-              >
-                <span className="font-mono text-[11px] text-twine mb-2.5 block">{s.year}</span>
-                <h3 className="font-display font-semibold text-xl text-paper mb-2">{s.title}</h3>
-                <p className="text-[13.5px] leading-relaxed text-[#B9B6A6] m-0">{s.body}</p>
-              </div>
-            </Reveal>
+            <motion.div
+              key={s.title}
+              custom={s.rot}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stampVariants}
+              transition={{ type: "spring", stiffness: 260, damping: 16, delay: i * 0.1 }}
+              whileHover={{ rotate: 0, scale: 1.02 }}
+              className="border-2 border-dashed border-paper/35 rounded-md px-5.5 py-6 bg-paper/[0.03] transition-colors duration-300 hover:bg-paper/[0.06]"
+            >
+              <span className="font-mono text-[0.6875rem] text-gold mb-2.5 block">{s.year}</span>
+              <h3 className="font-display font-semibold text-xl text-paper mb-2">{s.title}</h3>
+              <p className="text-[0.84375rem] leading-relaxed text-[#B9B6A6] m-0">{s.body}</p>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

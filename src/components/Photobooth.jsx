@@ -81,9 +81,12 @@ function playAcceptedTone() {
   }
 }
 
+const canvasFont = (weight, size, family = "sans-serif") => `${weight} ${size}px ${family}`
+const canvasBlur = (amount) => `blur(${amount}px)`
+
 function drawPortraitMask(ctx, width, height) {
   ctx.fillStyle = "#FFFFFF"
-  ctx.filter = "blur(18px)"
+  ctx.filter = canvasBlur(14.4)
 
   ctx.beginPath()
   ctx.ellipse(width * 0.5, height * 0.34, width * 0.23, height * 0.29, 0, 0, Math.PI * 2)
@@ -156,11 +159,11 @@ async function composeStrip(photoUrl, layout, background) {
   ctx.fillRect(34, 34, width - 68, height - 68)
 
   ctx.fillStyle = "#1D6098"
-  ctx.font = "700 34px sans-serif"
+  ctx.font = canvasFont(700, 27.2)
   ctx.textAlign = "center"
   ctx.fillText("mari-photo", width / 2, 86)
   ctx.fillStyle = "#30A0FE"
-  ctx.font = "500 18px sans-serif"
+  ctx.font = canvasFont(500, 14.4)
   ctx.fillText("⊹ ࣪ ˖", width / 2, 114)
 
   const contentX = 58
@@ -197,7 +200,7 @@ async function composeStrip(photoUrl, layout, background) {
   }
 
   ctx.fillStyle = "#111111"
-  ctx.font = "700 18px sans-serif"
+  ctx.font = canvasFont(700, 14.4)
   ctx.fillText("thank you for visiting", width / 2, height - 44)
 
   return canvas.toDataURL("image/png")
@@ -213,7 +216,7 @@ function StepButton({ children, disabled, variant = "primary", ...props }) {
     <button
       type="button"
       disabled={disabled}
-      className={`rounded-full px-5 py-3 font-mono text-[12px] font-bold uppercase tracking-wide shadow-[0_12px_22px_rgba(29,96,152,0.18)] transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45 ${classes}`}
+      className={`rounded-full px-5 py-3 font-mono text-[0.75rem] font-bold uppercase tracking-wide shadow-[0_0.75rem_1.375rem_rgba(29,96,152,0.18)] transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45 ${classes}`}
       {...props}
     >
       {children}
@@ -224,9 +227,9 @@ function StepButton({ children, disabled, variant = "primary", ...props }) {
 function Slot({ scannerRef, active }) {
   return (
     <div ref={scannerRef} className="absolute right-5 top-5 z-20 w-28 sm:w-36">
-      <div className="rounded-[18px] bg-black p-2 shadow-[0_14px_26px_rgba(0,0,0,0.3)]">
+      <div className="rounded-[1.125rem] bg-black p-2 shadow-[0_0.875rem_1.625rem_rgba(0,0,0,0.3)]">
         <div className={`h-5 rounded-full bg-[#1D6098] ${active ? "photobooth-scan-pulse" : ""}`} />
-        <div className="mt-2 flex items-center justify-between px-1 font-mono text-[8px] text-white/80">
+        <div className="mt-2 flex items-center justify-between px-1 font-mono text-[0.5rem] text-white/80">
           <span>₱50</span>
           <span>SCAN</span>
         </div>
@@ -440,7 +443,7 @@ export default function Photobooth() {
 
   return (
     <section id="photobooth" className="relative overflow-hidden bg-white py-28 text-black">
-      <div className="max-w-[1180px] mx-auto px-6 sm:px-8">
+      <div className="max-w-[73.75rem] mx-auto px-6 sm:px-8">
         <div className="mb-8 max-w-2xl">
           <span className="kicker-dash font-mono text-xs text-[#1D6098] flex items-center gap-2.5 mb-3.5">
             photobooth
@@ -450,14 +453,14 @@ export default function Photobooth() {
           </h2>
         </div>
 
-        <div className="relative mx-auto max-w-[980px] rounded-[32px] bg-[#30A0FE] p-3 shadow-[0_28px_70px_rgba(29,96,152,0.34)] sm:p-5">
-          <div className="relative min-h-[760px] overflow-hidden rounded-[26px] border-[10px] border-black bg-[#CCE6FC] sm:border-[14px]">
+        <div className="relative mx-auto max-w-[61.25rem] rounded-[2rem] bg-[#30A0FE] p-3 shadow-[0_1.75rem_4.375rem_rgba(29,96,152,0.34)] sm:p-5">
+          <div className="relative min-h-[47.5rem] overflow-hidden rounded-[1.625rem] border-[0.625rem] border-black bg-[#CCE6FC] sm:border-[0.875rem]">
             <Slot scannerRef={scannerRef} active={step === "payment"} />
 
-            <div className="absolute left-1/2 bottom-6 z-20 w-[min(360px,72vw)] -translate-x-1/2">
-              <div className="rounded-[18px] bg-black p-3 shadow-[0_18px_28px_rgba(0,0,0,0.3)]">
+            <div className="absolute left-1/2 bottom-6 z-20 w-[min(22.5rem,72vw)] -translate-x-1/2">
+              <div className="rounded-[1.125rem] bg-black p-3 shadow-[0_1.125rem_1.75rem_rgba(0,0,0,0.3)]">
                 <div className="h-5 rounded-full bg-white/90" />
-                <p className="mt-2 text-center font-mono text-[9px] uppercase tracking-[0.28em] text-white/75">
+                <p className="mt-2 text-center font-mono text-[0.5625rem] uppercase tracking-[0.28em] text-white/75">
                   print output
                 </p>
               </div>
@@ -468,7 +471,7 @@ export default function Photobooth() {
                 <button
                   type="button"
                   onClick={goBack}
-                  className="rounded-full bg-white/90 px-4 py-2 font-mono text-[11px] font-bold uppercase text-[#1D6098] shadow-[0_8px_18px_rgba(29,96,152,0.16)] transition hover:-translate-x-0.5"
+                  className="rounded-full bg-white/90 px-4 py-2 font-mono text-[0.6875rem] font-bold uppercase text-[#1D6098] shadow-[0_0.5rem_1.125rem_rgba(29,96,152,0.16)] transition hover:-translate-x-0.5"
                 >
                   Back
                 </button>
@@ -478,12 +481,12 @@ export default function Photobooth() {
               <div className="hidden flex-1 overflow-hidden rounded-full bg-white/55 p-1 sm:block">
                 <div className="h-2 rounded-full bg-[#1D6098] transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
-              <span className="rounded-full bg-black px-3 py-2 font-mono text-[10px] uppercase text-white">
+              <span className="rounded-full bg-black px-3 py-2 font-mono text-[0.625rem] uppercase text-white">
                 {stepLabels[step]}
               </span>
             </div>
 
-            <div className="relative z-[5] min-h-[760px] px-5 pb-36 pt-28 sm:px-8">
+            <div className="relative z-[5] min-h-[47.5rem] px-5 pb-36 pt-28 sm:px-8">
               <AnimatePresence mode="wait">
                 {step === "welcome" && (
                   <motion.div
@@ -493,12 +496,12 @@ export default function Photobooth() {
                     exit={{ opacity: 0, y: -24 }}
                     className="mx-auto flex max-w-xl flex-col items-center justify-center text-center"
                   >
-                    <div className="mb-8 rounded-[28px] border-[8px] border-black bg-white p-7 shadow-[0_18px_36px_rgba(29,96,152,0.22)]">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.38em] text-[#1D6098]">self-service</p>
+                    <div className="mb-8 rounded-[1.75rem] border-[0.5rem] border-black bg-white p-7 shadow-[0_1.125rem_2.25rem_rgba(29,96,152,0.22)]">
+                      <p className="font-mono text-[0.6875rem] uppercase tracking-[0.38em] text-[#1D6098]">self-service</p>
                       <h3 className="mt-3 font-display text-[clamp(2.2rem,7vw,4.4rem)] leading-none text-black">
                         mari-photo <span className="text-[#30A0FE]">⊹ ࣪ ˖</span>
                       </h3>
-                      <p className="mx-auto mt-5 max-w-sm text-[15px] leading-relaxed text-black/65">
+                      <p className="mx-auto mt-5 max-w-sm text-[0.9375rem] leading-relaxed text-black/65">
                         Step in, insert ₱50, pick your strip, snap a photo, choose a backdrop, and print.
                       </p>
                     </div>
@@ -512,14 +515,14 @@ export default function Photobooth() {
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -24 }}
-                    className="relative mx-auto min-h-[560px] max-w-3xl"
+                    className="relative mx-auto min-h-[35rem] max-w-3xl"
                   >
-                    <div className="rounded-[28px] border-[8px] border-black bg-white p-7 shadow-[0_18px_36px_rgba(29,96,152,0.18)]">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#1D6098]">insert payment</p>
+                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-7 shadow-[0_1.125rem_2.25rem_rgba(29,96,152,0.18)]">
+                      <p className="font-mono text-[0.6875rem] uppercase tracking-[0.28em] text-[#1D6098]">insert payment</p>
                       <h3 className="mt-2 font-display text-4xl">₱50 photo session</h3>
-                      <p className="mt-3 max-w-md text-[14px] text-black/60">Drag the bill into the scanner slot.</p>
+                      <p className="mt-3 max-w-md text-[0.875rem] text-black/60">Drag the bill into the scanner slot.</p>
                       {paymentAccepted && (
-                        <p className="mt-5 inline-flex rounded-full bg-[#CCE6FC] px-4 py-2 font-mono text-[11px] font-bold text-[#1D6098]">
+                        <p className="mt-5 inline-flex rounded-full bg-[#CCE6FC] px-4 py-2 font-mono text-[0.6875rem] font-bold text-[#1D6098]">
                           Payment Accepted
                         </p>
                       )}
@@ -536,11 +539,11 @@ export default function Photobooth() {
                       initial={{ x: "-120%", rotate: -4, opacity: 0 }}
                       animate={
                         billInserted
-                          ? { x: "calc(100vw - 260px)", y: -36, opacity: 0, scale: 0.35 }
+                          ? { x: "calc(100vw - 16.25rem)", y: -36, opacity: 0, scale: 0.35 }
                           : { x: billPosition.x, y: billPosition.y, rotate: -1, opacity: 1, scale: 1 }
                       }
                       transition={{ duration: billInserted ? 0.55 : 0.12, ease: "easeOut" }}
-                      className="absolute left-0 top-72 z-30 w-[min(390px,72vw)] touch-none select-none rounded-md shadow-[0_16px_28px_rgba(0,0,0,0.22)]"
+                      className="absolute left-0 top-72 z-30 w-[min(24.375rem,72vw)] touch-none select-none rounded-md shadow-[0_1rem_1.75rem_rgba(0,0,0,0.22)]"
                       draggable={false}
                     />
                   </motion.div>
@@ -556,7 +559,7 @@ export default function Photobooth() {
                   >
                     <div className="mb-6 text-center">
                       <h3 className="font-display text-4xl">Choose your strip</h3>
-                      <p className="mt-2 text-[14px] text-black/60">Pick a print style before heading into the booth.</p>
+                      <p className="mt-2 text-[0.875rem] text-black/60">Pick a print style before heading into the booth.</p>
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       {layouts.map((layout) => (
@@ -564,16 +567,16 @@ export default function Photobooth() {
                           type="button"
                           key={layout.id}
                           onClick={() => setSelectedLayout(layout)}
-                          className={`rounded-[24px] border-[5px] bg-white p-4 text-left shadow-[0_16px_28px_rgba(29,96,152,0.18)] transition-all duration-200 hover:-translate-y-1 ${
+                          className={`rounded-[1.5rem] border-[0.3125rem] bg-white p-4 text-left shadow-[0_1rem_1.75rem_rgba(29,96,152,0.18)] transition-all duration-200 hover:-translate-y-1 ${
                             selectedLayout.id === layout.id ? "border-[#1D6098]" : "border-black"
                           }`}
                         >
-                          <div className={`grid h-64 gap-2 rounded-[16px] bg-black p-3 ${layout.className}`}>
+                          <div className={`grid h-64 gap-2 rounded-[1rem] bg-black p-3 ${layout.className}`}>
                             {Array.from({ length: layout.frames }).map((_, i) => (
                               <span key={i} className="rounded-md bg-[linear-gradient(145deg,#CCE6FC,#FFFFFF)]" />
                             ))}
                           </div>
-                          <span className="mt-4 block font-mono text-[11px] font-bold uppercase text-[#1D6098]">
+                          <span className="mt-4 block font-mono text-[0.6875rem] font-bold uppercase text-[#1D6098]">
                             {layout.name}
                           </span>
                         </button>
@@ -595,7 +598,7 @@ export default function Photobooth() {
                     exit={{ opacity: 0, y: -24 }}
                     className="mx-auto max-w-3xl text-center"
                   >
-                    <div className="relative overflow-hidden rounded-[28px] border-[8px] border-black bg-black shadow-[0_20px_38px_rgba(29,96,152,0.24)]">
+                    <div className="relative overflow-hidden rounded-[1.75rem] border-[0.5rem] border-black bg-black shadow-[0_1.25rem_2.375rem_rgba(29,96,152,0.24)]">
                       {cameraError ? (
                         <div className="flex aspect-[4/3] items-center justify-center bg-white p-8 text-center text-sm text-black/65">
                           {cameraError}
@@ -627,8 +630,8 @@ export default function Photobooth() {
                     exit={{ opacity: 0, y: -24 }}
                     className="mx-auto max-w-3xl text-center"
                   >
-                    <div className="mx-auto max-w-lg rounded-[28px] border-[8px] border-black bg-white p-4 shadow-[0_20px_38px_rgba(29,96,152,0.24)]">
-                      <img src={capturedPhoto} alt="Captured photobooth preview" className="aspect-[4/3] w-full rounded-[18px] object-cover" />
+                    <div className="mx-auto max-w-lg rounded-[1.75rem] border-[0.5rem] border-black bg-white p-4 shadow-[0_1.25rem_2.375rem_rgba(29,96,152,0.24)]">
+                      <img src={capturedPhoto} alt="Captured photobooth preview" className="aspect-[4/3] w-full rounded-[1.125rem] object-cover" />
                     </div>
                     <div className="mt-7 flex flex-wrap justify-center gap-3">
                       <StepButton variant="ghost" onClick={() => setStep("camera")}>
@@ -647,10 +650,10 @@ export default function Photobooth() {
                     exit={{ opacity: 0, y: -24 }}
                     className="mx-auto grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[1fr_0.85fr]"
                   >
-                    <div className="rounded-[28px] border-[8px] border-black bg-white p-4 shadow-[0_20px_38px_rgba(29,96,152,0.24)]">
-                      <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[18px]" style={{ background: selectedBackground.css }}>
+                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-4 shadow-[0_1.25rem_2.375rem_rgba(29,96,152,0.24)]">
+                      <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[1.125rem]" style={{ background: selectedBackground.css }}>
                         {isCompositing ? (
-                          <div className="flex flex-col items-center gap-3 font-mono text-[12px] uppercase tracking-wide text-[#1D6098]">
+                          <div className="flex flex-col items-center gap-3 font-mono text-[0.75rem] uppercase tracking-wide text-[#1D6098]">
                             <span className="h-10 w-10 animate-spin rounded-full border-4 border-[#CCE6FC] border-t-[#1D6098]" />
                             preparing backdrop
                           </div>
@@ -658,11 +661,11 @@ export default function Photobooth() {
                           <img src={currentPhotoForPreview} alt="Selected photobooth background preview" className="h-full w-full object-cover" />
                         ) : null}
                       </div>
-                      <p className="mt-4 rounded-[18px] bg-[#CCE6FC] p-4 text-sm leading-relaxed text-[#1D6098]">
+                      <p className="mt-4 rounded-[1.125rem] bg-[#CCE6FC] p-4 text-sm leading-relaxed text-[#1D6098]">
                         Local backdrop mode uses an in-browser portrait matte, so it works without an API key or upload.
                       </p>
                     </div>
-                    <div className="rounded-[28px] border-[8px] border-black bg-white p-5">
+                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-5">
                       <h3 className="font-display text-3xl">Choose backdrop</h3>
                       <div className="mt-5 grid grid-cols-1 gap-3">
                         {backgrounds.map((background) => (
@@ -670,12 +673,12 @@ export default function Photobooth() {
                             type="button"
                             key={background.id}
                             onClick={() => setSelectedBackground(background)}
-                            className={`flex items-center gap-4 rounded-[18px] border-4 p-3 text-left transition hover:-translate-y-0.5 ${
+                            className={`flex items-center gap-4 rounded-[1.125rem] border-4 p-3 text-left transition hover:-translate-y-0.5 ${
                               selectedBackground.id === background.id ? "border-[#1D6098]" : "border-[#CCE6FC]"
                             }`}
                           >
-                            <span className="h-12 w-16 rounded-[12px] border border-black/10" style={{ background: background.css }} />
-                            <span className="font-mono text-[12px] font-bold uppercase text-black/75">{background.name}</span>
+                            <span className="h-12 w-16 rounded-[0.75rem] border border-black/10" style={{ background: background.css }} />
+                            <span className="font-mono text-[0.75rem] font-bold uppercase text-black/75">{background.name}</span>
                           </button>
                         ))}
                       </div>
@@ -702,7 +705,7 @@ export default function Photobooth() {
                       <img
                         src={stripImage}
                         alt="Printed mari-photo strip"
-                        className="photobooth-print-out absolute left-1/2 bottom-[84px] z-10 w-[min(260px,58vw)] -translate-x-1/2 rounded-sm shadow-[0_18px_32px_rgba(0,0,0,0.3)]"
+                        className="photobooth-print-out absolute left-1/2 bottom-[5.25rem] z-10 w-[min(16.25rem,58vw)] -translate-x-1/2 rounded-sm shadow-[0_1.125rem_2rem_rgba(0,0,0,0.3)]"
                       />
                     )}
                   </motion.div>
@@ -720,12 +723,12 @@ export default function Photobooth() {
                       <img
                         src={stripImage}
                         alt="Finished mari-photo strip"
-                        className="mb-6 max-h-[360px] rounded-sm shadow-[0_18px_32px_rgba(0,0,0,0.28)]"
+                        className="mb-6 max-h-[22.5rem] rounded-sm shadow-[0_1.125rem_2rem_rgba(0,0,0,0.28)]"
                       />
                     )}
-                    <div className="rounded-[28px] border-[8px] border-black bg-white p-7">
+                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-7">
                       <h3 className="font-display text-4xl">Thank you for using mari-photo ⊹ ࣪ ˖</h3>
-                      <p className="mt-4 text-[15px] text-black/65">We hope you enjoyed your visit!</p>
+                      <p className="mt-4 text-[0.9375rem] text-black/65">We hope you enjoyed your visit!</p>
                       <div className="mt-6">
                         <StepButton onClick={resetBooth}>Return Home</StepButton>
                       </div>

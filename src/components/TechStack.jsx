@@ -34,7 +34,7 @@ const restAngles = [-2.5, 1.5, -1.8, 2, -1.2, 2.4]
 
 function Card({ cat }) {
   return (
-    <div className="group relative rounded-[28px] p-7 border border-white/40 bg-white/20 backdrop-blur-xl shadow-[0_8px_32px_rgba(31,41,55,0.15)] transition-colors duration-500 hover:bg-white/95 hover:border-white/70">
+    <div className="group relative rounded-[1.75rem] p-7 border border-white/40 bg-white/20 backdrop-blur-xl shadow-[0_0.5rem_2rem_rgba(31,41,55,0.15)] transition-colors duration-500 hover:bg-white/95 hover:border-white/70">
       <h3 className="font-google font-bold uppercase tracking-wide text-xl mb-4 text-white transition-colors duration-500 group-hover:text-ink">
         {cat.title}
       </h3>
@@ -57,12 +57,12 @@ export default function TechStack() {
     <section id="stack" className="relative min-h-screen py-28 overflow-hidden bg-tech-sky">
       <Clouds />
 
-      <div className="max-w-[1180px] mx-auto px-8 relative z-10">
+      <div className="max-w-[73.75rem] mx-auto px-8 relative z-10">
         <Reveal className="mb-14">
-          <h2 className="font-advercase font-bold text-ink text-[clamp(2.6rem,6vw,4.4rem)] leading-none drop-shadow-[3px_4px_0_rgba(0,0,0,0.12)]">
+          <h2 className="font-advercase font-bold text-ink text-[clamp(2.6rem,6vw,4.4rem)] leading-none drop-shadow-[0.1875rem_0.25rem_0_rgba(0,0,0,0.12)]">
             my tech stack
           </h2>
-          <p className="font-google font-semibold text-ink mt-4 text-[15px]">
+          <p className="font-google font-semibold text-ink mt-4 text-[0.9375rem]">
             tools and technologies i have worked and work with — freshly pinned up.
           </p>
         </Reveal>

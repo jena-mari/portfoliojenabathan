@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
 
 export default function Postcard({ project, layout, scattered }) {
   const cardRef = useRef(null)
   const dragState = useRef({ dragging: false, moved: false, startX: 0, startY: 0, origX: 0, origY: 0 })
   const [flipped, setFlipped] = useState(false)
   const [visible, setVisible] = useState(false)
+  const [cardOffset, setCardOffset] = useState({ x: 0, y: 0 })
+  const [dragging, setDragging] = useState(false)
 
   // fade in when scrolled into view (opacity only — a transform here would
   // create a new containing block and break the absolute drag positioning)
@@ -24,77 +27,76 @@ export default function Postcard({ project, layout, scattered }) {
     return () => io.disconnect()
   }, [])
 
-  useEffect(() => {
-    const card = cardRef.current
-    if (!card || !scattered) return
-
-    const getXY = () => {
-      const style = window.getComputedStyle(card)
-      if (style.transform === "none") return { x: 0, y: 0 }
-      const m = new DOMMatrixReadOnly(style.transform)
-      return { x: m.m41, y: m.m42 }
+  const onPointerDown = (e) => {
+    if (!scattered) return
+    dragState.current = {
+      dragging: true,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: cardOffset.x,
+      origY: cardOffset.y,
     }
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDragging(true)
+  }
 
-    const onPointerDown = (e) => {
-      dragState.current.dragging = true
-      dragState.current.moved = false
-      card.setPointerCapture(e.pointerId)
-      dragState.current.startX = e.clientX
-      dragState.current.startY = e.clientY
-      const xy = getXY()
-      dragState.current.origX = xy.x
-      dragState.current.origY = xy.y
-      card.style.zIndex = 50
-    }
+  const onPointerMove = (e) => {
+    if (!dragState.current.dragging || !scattered) return
+    const dx = e.clientX - dragState.current.startX
+    const dy = e.clientY - dragState.current.startY
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragState.current.moved = true
+    if (!dragState.current.moved) return
 
-    const onPointerMove = (e) => {
-      if (!dragState.current.dragging) return
-      const dx = e.clientX - dragState.current.startX
-      const dy = e.clientY - dragState.current.startY
-      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragState.current.moved = true
-      if (dragState.current.moved) {
-        card.style.transform = `translate(${dragState.current.origX + dx}px, ${dragState.current.origY + dy}px) rotate(${layout.rot}deg)`
-      }
-    }
+    setCardOffset({
+      x: dragState.current.origX + dx,
+      y: dragState.current.origY + dy,
+    })
+  }
 
-    const onPointerUp = () => {
-      if (!dragState.current.dragging) return
-      dragState.current.dragging = false
-      card.style.zIndex = ""
-      if (!dragState.current.moved) {
-        setFlipped((f) => !f)
-      }
+  const onPointerUp = (e) => {
+    if (!dragState.current.dragging) return
+    const shouldFlip = !dragState.current.moved
+    dragState.current.dragging = false
+    setDragging(false)
+    if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
     }
-
-    card.addEventListener("pointerdown", onPointerDown)
-    card.addEventListener("pointermove", onPointerMove)
-    card.addEventListener("pointerup", onPointerUp)
-    card.addEventListener("pointercancel", onPointerUp)
-    return () => {
-      card.removeEventListener("pointerdown", onPointerDown)
-      card.removeEventListener("pointermove", onPointerMove)
-      card.removeEventListener("pointerup", onPointerUp)
-      card.removeEventListener("pointercancel", onPointerUp)
-    }
-  }, [scattered, layout.rot])
+    if (shouldFlip) setFlipped((f) => !f)
+  }
 
   const style = scattered
-    ? { position: "absolute", top: layout.top, left: layout.left, transform: `rotate(${layout.rot}deg)`, cursor: "grab" }
+    ? {
+        position: "absolute",
+        top: layout.top,
+        left: layout.left,
+        transform: `translate(${cardOffset.x}px, ${cardOffset.y}px) rotate(${layout.rot}deg)`,
+        cursor: dragging ? "grabbing" : "grab",
+        zIndex: dragging ? 50 : 10,
+      }
     : { position: "relative" }
 
   return (
     <div
       ref={cardRef}
       onClick={() => !scattered && setFlipped((f) => !f)}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
       style={style}
-      className={`pc-scene w-full max-w-[min(520px,92vw)] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
+      className={`pc-scene w-full max-w-[30rem] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
         visible ? "opacity-100 blur-0" : "opacity-0 blur-sm"
       }`}
     >
-      <div className={`pc-inner ${flipped ? "is-flipped" : ""}`}>
+      <motion.div
+        className="pc-inner"
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        transition={{ type: "spring", stiffness: 240, damping: 24 }}
+      >
         {/* front */}
-        <div className="pc-face pc-paper-face pc-paper-front rounded-[3px] p-6 flex flex-col text-ink">
-          <div className="relative flex-1 overflow-hidden border-[1.5px] border-ink-soft/65 bg-paper-dark">
+        <div className="pc-face bg-cream-card rounded-sm shadow-postal-lg p-6 flex flex-col text-ink">
+          <div className="relative flex-1 overflow-hidden border-[0.09375rem] border-ink-soft">
             {project.image ? (
               <img
                 src={project.image}
@@ -102,26 +104,30 @@ export default function Postcard({ project, layout, scattered }) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="hatch-placeholder w-full h-full flex items-center justify-center text-center font-mono text-[10.5px] text-ink-soft p-3.5 leading-relaxed">
+              <div className="hatch-placeholder w-full h-full flex items-center justify-center text-center font-mono text-[0.65625rem] text-ink-soft p-3.5 leading-relaxed">
                 [ project photo/screenshot goes here ]
               </div>
             )}
+            <span className="absolute top-2 right-2 w-[1.875rem] h-[1.875rem] rounded-full border-[0.09375rem] border-gold-deep opacity-60 pointer-events-none" />
           </div>
-          <div className="flex justify-between items-baseline gap-4 mt-4">
-            <h3 className="font-display font-semibold text-[1.35rem] leading-none">{project.title}</h3>
-            <span className="font-mono text-[10.5px] text-ink-soft text-right">{project.tag}</span>
+          <div className="flex justify-between items-baseline mt-3">
+            <h3 className="font-display font-semibold text-xl">{project.title}</h3>
+            <span className="font-mono text-[0.625rem] text-ink-soft">{project.tag}</span>
           </div>
-          <span className="font-mono text-[10.5px] text-stamp mt-1.5">{project.role}</span>
+          <span className="font-mono text-[0.625rem] text-pink-deep mt-1">{project.role}</span>
         </div>
 
         {/* back */}
-        <div className="pc-face pc-face-back pc-paper-face pc-paper-back rounded-[3px] p-6 text-ink">
+        <div className="pc-face pc-face-back contact-back rounded-sm shadow-postal-lg p-6 text-ink">
           <div className="flex h-full gap-0">
-            <div className="flex-[1.6] pr-4 ruled-lines font-display italic text-[14px] leading-[24px] text-ink-soft overflow-hidden">
+            <div className="flex-[1.6] pr-3.5 ruled-lines font-display italic text-[0.8125rem] leading-[1.375rem] text-ink-soft overflow-hidden">
               {project.message}
             </div>
-            <div className="flex-1 pl-4 flex flex-col justify-end border-l border-dashed border-paper-line">
-              <div className="flex flex-col gap-2">
+            <div className="flex-1 pl-3.5 flex flex-col justify-between">
+              <div className="w-[2.375rem] h-[2.875rem] border-[0.09375rem] border-dashed border-ink-soft ml-auto mb-2 flex items-center justify-center text-center font-mono text-[0.46875rem] text-ink-soft leading-tight">
+                postmark
+              </div>
+              <div className="flex flex-col gap-1.5">
                 {project.links.map((link) => (
                   <a
                     key={link.href}
@@ -129,7 +135,7 @@ export default function Postcard({ project, layout, scattered }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="font-mono text-[10.5px] border border-ink rounded-full px-3 py-1.5 inline-flex items-center gap-1.5 self-start transition-colors duration-200 hover:bg-ink hover:text-cream-card"
+                    className="font-mono text-[0.625rem] border border-ink rounded-full px-2.5 py-1.5 inline-flex items-center gap-1.5 self-start transition-colors duration-200 hover:bg-ink hover:text-cream-card"
                   >
                     {link.label} →
                   </a>
@@ -138,7 +144,7 @@ export default function Postcard({ project, layout, scattered }) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

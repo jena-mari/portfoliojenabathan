@@ -3,14 +3,14 @@ import { motion, motionValue, animate, useMotionTemplate } from "framer-motion"
 import Reveal from "./Reveal"
 import LaundryCard from "./LaundryCard"
 
-const BASE_Y = 14 // resting rope height inside its own SVG (px)
-const IDLE_SAG = 9 // resting droop at each pin, before any interaction
-const IDLE_RANGE = 3 // how far the idle sway moves the droop up/down
+const BASE_Y = 11.2 // resting rope height inside its own SVG (px)
+const IDLE_SAG = 7.2 // resting droop at each pin, before any interaction
+const IDLE_RANGE = 2.4 // how far the idle sway moves the droop up/down
 const PULL_DOWN = 0.55 // how much dragging down stretches the rope
 const PULL_SIDE = 0.12 // how much dragging sideways also adds tension
 
-const ROPE_AREA = 40 // height reserved above the card grid for the rope (px) — matches the bleed SVG's own height, and is where cards start in normal flow
-const CLIP_TOP = 6 // where the clip's top edge sits, in row-relative px — just above the rope baseline so the rope reads as threaded through the pin
+const ROPE_AREA = 32 // height reserved above the card grid for the rope (px) — matches the bleed SVG's own height, and is where cards start in normal flow
+const CLIP_TOP = 4.8 // where the clip's top edge sits, in row-relative px — just above the rope baseline so the rope reads as threaded through the pin
 const CLIP_LIFT = ROPE_AREA - CLIP_TOP // how far above each card's own top the clip needs to sit, in local (per-card) coordinates
 
 // A full-bleed, physically-reactive clothesline: the rope, the clips, and
@@ -99,12 +99,12 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
         className="absolute top-0 left-1/2 w-screen -translate-x-1/2 h-10 pointer-events-none select-none"
         aria-hidden="true"
       >
-        <svg width="100%" height="40" className="overflow-visible">
+        <svg width="100%" height="32" className="overflow-visible">
           <motion.path
             d={pathD}
             fill="none"
             stroke="#8A6F45"
-            strokeWidth="3"
+            strokeWidth="2.4"
             strokeLinecap="round"
             strokeLinejoin="round"
             opacity="0.35"
@@ -113,7 +113,7 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
             d={pathD}
             fill="none"
             stroke="#FBF7EC"
-            strokeWidth="2"
+            strokeWidth="1.6"
             strokeLinecap="round"
             strokeLinejoin="round"
             opacity="0.9"
@@ -137,8 +137,8 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
                 src="/items/clip.png"
                 alt=""
                 aria-hidden="true"
-                style={{ width: 32, height: "auto" }}
-                className="drop-shadow-[0_4px_6px_rgba(0,0,0,0.25)] select-none"
+                style={{ width: 25.6, height: "auto" }}
+                className="drop-shadow-[0_0.25rem_0.375rem_rgba(0,0,0,0.25)] select-none"
               />
             </motion.div>
 
