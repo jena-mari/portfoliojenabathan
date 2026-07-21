@@ -4,8 +4,8 @@ const links = [
   { href: "#stack", label: "stack" },
   { href: "#projects", label: "projects" },
   { href: "#journey", label: "journey" },
-  { href: "#photobooth", label: "photobooth" },
   { href: "#contact", label: "contact" },
+  { href: "#my-space", label: "my-space" },
 ]
 
 export default function Nav() {

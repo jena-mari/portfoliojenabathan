@@ -126,9 +126,8 @@ body {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform .6s var(--ease-postal);
+  will-change: transform;
 }
-.pc-inner.is-flipped { transform: rotateY(180deg); }
 .pc-face {
   position: absolute;
   inset: 0;
@@ -258,18 +257,39 @@ body {
 @keyframes clouds-loop-2 { to { background-position: -62.5rem 0; } }
 @keyframes clouds-loop-3 { to { background-position: -98.6875rem 0; } }
 
-/* ---- trinkets: large draggable cutouts with a hover speech bubble ---- */
+/* ---- trinkets: interactive cutouts with a hover speech bubble ---- */
+.trinket-item {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: translate3d(var(--trinket-x, 0px), var(--trinket-y, 0px), 0) rotate(var(--trinket-rot));
+  transform-origin: center;
+  transition: transform 160ms var(--ease-postal);
+  touch-action: pan-y;
+}
+.trinket-item:hover,
+.trinket-item:focus-visible {
+  transform: translate3d(var(--trinket-x, 0px), calc(var(--trinket-y, 0px) - 0.375rem), 0) rotate(var(--trinket-rot)) scale(1.04);
+}
+.trinket-item.is-dragging {
+  transition: none;
+}
+.trinket-item.is-dragging:hover,
+.trinket-item.is-dragging:focus-visible {
+  transform: translate3d(var(--trinket-x, 0px), var(--trinket-y, 0px), 0) rotate(var(--trinket-rot));
+}
+.trinket-item.is-dragging .trinket-cutout {
+  filter: drop-shadow(0 0.75rem 1rem rgba(58,48,42,0.22));
+}
+
 .trinket-cutout {
   filter:
-    drop-shadow(0 0.1875rem 0 #FFFDF7)
-    drop-shadow(0 -0.1875rem 0 #FFFDF7)
-    drop-shadow(0.1875rem 0 0 #FFFDF7)
-    drop-shadow(-0.1875rem 0 0 #FFFDF7)
-    drop-shadow(0.1325rem 0.1325rem 0 #FFFDF7)
-    drop-shadow(-0.1325rem 0.1325rem 0 #FFFDF7)
-    drop-shadow(0.1325rem -0.1325rem 0 #FFFDF7)
-    drop-shadow(-0.1325rem -0.1325rem 0 #FFFDF7)
-    drop-shadow(0 1.125rem 1.75rem rgba(58,48,42,0.28));
+    drop-shadow(0.125rem 0 0 #FFFDF7)
+    drop-shadow(-0.125rem 0 0 #FFFDF7)
+    drop-shadow(0 0.125rem 0 #FFFDF7)
+    drop-shadow(0 -0.125rem 0 #FFFDF7)
+    drop-shadow(0 0.75rem 1rem rgba(58,48,42,0.22));
 }
 
 .trinket-bubble {
@@ -285,4 +305,75 @@ body {
   background: inherit;
   transform: translateX(-50%) rotate(45deg);
   border-radius: 0.125rem;
+}
+
+@font-face {
+  font-family: "Hi Melody";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://static.figma.com/font/HiMelody-Regular_1") format("woff2");
+}
+
+@keyframes slide-in-bill {
+  from { transform: translateX(-140%) rotate(-5deg); }
+  to { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes bill-sucked {
+  from { transform: translateX(0) scaleY(1); opacity: 1; }
+  to { transform: translateX(80px) scaleY(0.05); opacity: 0; }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(48,160,254,0.5); }
+  70% { box-shadow: 0 0 0 20px rgba(48,160,254,0); }
+  100% { box-shadow: 0 0 0 0 rgba(48,160,254,0); }
+}
+
+@keyframes strip-emerge {
+  from { clip-path: inset(100% 0 0 0); transform: translateY(30px); }
+  to { clip-path: inset(0 0 0 0); transform: translateY(0); }
+}
+
+@keyframes countdown-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.6; }
+}
+
+@keyframes flash-white {
+  0%, 100% { opacity: 0; }
+  10% { opacity: 1; }
+  40% { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce-arrow {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
+
+@keyframes printer-lines {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 8px; }
 }

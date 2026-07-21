@@ -1,745 +1,666 @@
-import { AnimatePresence, motion } from "framer-motion"
-import { useEffect, useMemo, useRef, useState } from "react"
-
-const steps = ["welcome", "payment", "layout", "camera", "confirm", "background", "printing", "thanks"]
-
-const layouts = [
-  { id: "classic", name: "Classic 3-cut", frames: 3, className: "grid-rows-3" },
-  { id: "quad", name: "Square 4-cut", frames: 4, className: "grid-cols-2 grid-rows-2" },
-  { id: "wide", name: "Double wide", frames: 2, className: "grid-rows-2" },
-]
-
-const backgrounds = [
-  { id: "blue", name: "Light Blue", css: "#CCE6FC", kind: "solid", colors: ["#CCE6FC"] },
-  { id: "gray", name: "Gray", css: "#ECEFF1", kind: "solid", colors: ["#ECEFF1"] },
-  { id: "blue-white", name: "Blue -> White", css: "linear-gradient(145deg, #CCE6FC, #FFFFFF)", kind: "gradient", colors: ["#CCE6FC", "#FFFFFF"] },
-  { id: "pink-white", name: "Pink -> White", css: "linear-gradient(145deg, #FFDCE8, #FFFFFF)", kind: "gradient", colors: ["#FFDCE8", "#FFFFFF"] },
-  { id: "orange-white", name: "Orange -> White", css: "linear-gradient(145deg, #FFE1C4, #FFFFFF)", kind: "gradient", colors: ["#FFE1C4", "#FFFFFF"] },
-]
-
-const stepLabels = {
-  welcome: "Ready",
-  payment: "Payment",
-  layout: "Layout",
-  camera: "Camera",
-  confirm: "Preview",
-  background: "Backdrop",
-  printing: "Printing",
-  thanks: "Done",
-}
-
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.crossOrigin = "anonymous"
-    image.onload = () => resolve(image)
-    image.onerror = reject
-    image.src = src
-  })
-}
-
-function fillBackground(ctx, background, width, height) {
-  if (background.kind === "gradient") {
-    const gradient = ctx.createLinearGradient(0, 0, width, height)
-    gradient.addColorStop(0, background.colors[0])
-    gradient.addColorStop(1, background.colors[1])
-    ctx.fillStyle = gradient
-  } else {
-    ctx.fillStyle = background.colors[0]
-  }
-  ctx.fillRect(0, 0, width, height)
-}
-
-function drawImageCover(ctx, image, x, y, width, height) {
-  const imageRatio = image.width / image.height
-  const areaRatio = width / height
-  const sourceWidth = imageRatio > areaRatio ? image.height * areaRatio : image.width
-  const sourceHeight = imageRatio > areaRatio ? image.height : image.width / areaRatio
-  const sourceX = (image.width - sourceWidth) / 2
-  const sourceY = (image.height - sourceHeight) / 2
-  ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height)
-}
-
-function playAcceptedTone() {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext
-    const context = new AudioContext()
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    oscillator.type = "sine"
-    oscillator.frequency.setValueAtTime(880, context.currentTime)
-    oscillator.frequency.exponentialRampToValueAtTime(1320, context.currentTime + 0.12)
-    gain.gain.setValueAtTime(0.001, context.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.08, context.currentTime + 0.02)
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.18)
-    oscillator.connect(gain)
-    gain.connect(context.destination)
-    oscillator.start()
-    oscillator.stop(context.currentTime + 0.2)
-  } catch {
-    // Sound is optional; ignore browsers that block or do not support Web Audio.
-  }
-}
-
-const canvasFont = (weight, size, family = "sans-serif") => `${weight} ${size}px ${family}`
-const canvasBlur = (amount) => `blur(${amount}px)`
-
-function drawPortraitMask(ctx, width, height) {
-  ctx.fillStyle = "#FFFFFF"
-  ctx.filter = canvasBlur(14.4)
-
-  ctx.beginPath()
-  ctx.ellipse(width * 0.5, height * 0.34, width * 0.23, height * 0.29, 0, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.beginPath()
-  ctx.ellipse(width * 0.5, height * 0.83, width * 0.43, height * 0.47, 0, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.filter = "none"
-  ctx.beginPath()
-  ctx.ellipse(width * 0.5, height * 0.35, width * 0.2, height * 0.25, 0, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.beginPath()
-  ctx.ellipse(width * 0.5, height * 0.86, width * 0.38, height * 0.42, 0, 0, Math.PI * 2)
-  ctx.fill()
-}
-
-async function composeLocalBackdrop(photoUrl, background) {
-  const photo = await loadImage(photoUrl)
-  const canvas = document.createElement("canvas")
-  canvas.width = 900
-  canvas.height = 675
-  const ctx = canvas.getContext("2d")
-  fillBackground(ctx, background, canvas.width, canvas.height)
-
-  const subjectLayer = document.createElement("canvas")
-  subjectLayer.width = canvas.width
-  subjectLayer.height = canvas.height
-  const subjectCtx = subjectLayer.getContext("2d")
-  drawImageCover(subjectCtx, photo, 0, 0, subjectLayer.width, subjectLayer.height)
-
-  const mask = document.createElement("canvas")
-  mask.width = canvas.width
-  mask.height = canvas.height
-  drawPortraitMask(mask.getContext("2d"), mask.width, mask.height)
-
-  subjectCtx.globalCompositeOperation = "destination-in"
-  subjectCtx.drawImage(mask, 0, 0)
-  subjectCtx.globalCompositeOperation = "source-over"
-
-  ctx.save()
-  ctx.shadowColor = "rgba(29, 96, 152, 0.22)"
-  ctx.shadowBlur = 24
-  ctx.shadowOffsetY = 12
-  ctx.drawImage(subjectLayer, 0, 0)
-  ctx.restore()
-
-  return canvas.toDataURL("image/png")
-}
-
-async function composeStrip(photoUrl, layout, background) {
-  const photo = await loadImage(photoUrl)
-  const width = layout.id === "classic" ? 560 : 760
-  const height = layout.id === "quad" ? 1080 : layout.id === "wide" ? 1180 : 1580
-  const gutter = 34
-  const titleHeight = 126
-  const footerHeight = 86
-  const canvas = document.createElement("canvas")
-  canvas.width = width
-  canvas.height = height
-  const ctx = canvas.getContext("2d")
-
-  ctx.fillStyle = "#FFFFFF"
-  ctx.fillRect(0, 0, width, height)
-  ctx.fillStyle = "#111111"
-  ctx.fillRect(18, 18, width - 36, height - 36)
-  ctx.fillStyle = "#FFFFFF"
-  ctx.fillRect(34, 34, width - 68, height - 68)
-
-  ctx.fillStyle = "#1D6098"
-  ctx.font = canvasFont(700, 27.2)
-  ctx.textAlign = "center"
-  ctx.fillText("mari-photo", width / 2, 86)
-  ctx.fillStyle = "#30A0FE"
-  ctx.font = canvasFont(500, 14.4)
-  ctx.fillText("⊹ ࣪ ˖", width / 2, 114)
-
-  const contentX = 58
-  const contentY = titleHeight
-  const contentWidth = width - contentX * 2
-  const contentHeight = height - titleHeight - footerHeight
-  const frames = layout.frames
-
-  for (let i = 0; i < frames; i += 1) {
-    let x = contentX
-    let y = contentY
-    let frameWidth = contentWidth
-    let frameHeight = (contentHeight - gutter * (frames - 1)) / frames
-
-    if (layout.id === "quad") {
-      frameWidth = (contentWidth - gutter) / 2
-      frameHeight = (contentHeight - gutter) / 2
-      x = contentX + (i % 2) * (frameWidth + gutter)
-      y = contentY + Math.floor(i / 2) * (frameHeight + gutter)
-    } else {
-      y = contentY + i * (frameHeight + gutter)
-    }
-
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(x, y, frameWidth, frameHeight)
-    ctx.clip()
-    fillBackground(ctx, background, width, height)
-    drawImageCover(ctx, photo, x, y, frameWidth, frameHeight)
-    ctx.restore()
-    ctx.strokeStyle = "#CCE6FC"
-    ctx.lineWidth = 10
-    ctx.strokeRect(x, y, frameWidth, frameHeight)
-  }
-
-  ctx.fillStyle = "#111111"
-  ctx.font = canvasFont(700, 14.4)
-  ctx.fillText("thank you for visiting", width / 2, height - 44)
-
-  return canvas.toDataURL("image/png")
-}
-
-function StepButton({ children, disabled, variant = "primary", ...props }) {
-  const classes =
-    variant === "ghost"
-      ? "bg-white/80 text-[#1D6098] border border-[#CCE6FC] hover:bg-white"
-      : "bg-[#30A0FE] text-white border border-[#30A0FE] hover:bg-[#1D6098]"
-
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={`rounded-full px-5 py-3 font-mono text-[0.75rem] font-bold uppercase tracking-wide shadow-[0_0.75rem_1.375rem_rgba(29,96,152,0.18)] transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45 ${classes}`}
-      {...props}
-    >
+import { useCallback, useEffect, useRef, useState } from "react";
+// ─── Constants ────────────────────────────────────────────────────────────────
+const LAYOUTS = [
+    { id: "2x2", label: "2×2 Grid", cols: 2, rows: 2, desc: "Classic quad strip" },
+    { id: "1x3", label: "1×3 Strip", cols: 1, rows: 3, desc: "Vertical film strip" },
+    { id: "2x3", label: "2×3 Grid", cols: 2, rows: 3, desc: "Full collage" },
+    { id: "1x1", label: "Single", cols: 1, rows: 1, desc: "One perfect shot" },
+];
+const BG_OPTIONS = [
+    { id: "lightblue", label: "Light Blue", style: { background: "#CCE6FC" } },
+    { id: "gray", label: "Gray", style: { background: "#E8E8E8" } },
+    { id: "bluewhite", label: "Blue → White", style: { background: "linear-gradient(135deg, #CCE6FC 0%, #ffffff 100%)" } },
+    { id: "pinkwhite", label: "Pink → White", style: { background: "linear-gradient(135deg, #FCDDE7 0%, #ffffff 100%)" } },
+    { id: "orangewhite", label: "Orange → White", style: { background: "linear-gradient(135deg, #FFE4C4 0%, #ffffff 100%)" } },
+];
+const PRICE_LABEL = "₱40";
+// ─── Gradient text helper ────────────────────────────────────────────────────
+function GradientText({ children, className = "", size = "text-4xl" }) {
+    return (<span className={`${size} font-black bg-clip-text text-transparent ${className}`} style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #2680CB 50%, #1D6098 100%)" }}>
       {children}
-    </button>
-  )
+    </span>);
 }
+// ─── Machine Shell ────────────────────────────────────────────────────────────
+function MachineShell({ children, moneySlotHighlight = false, printerActive = false, printStrip }) {
+    return (<section id="photobooth" className="relative flex items-center justify-center min-h-screen w-full overflow-hidden py-20" style={{ background: "#CCE6FC" }}>
+      {/* Subtle background dots */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: "radial-gradient(circle, rgba(48,160,254,0.12) 1.5px, transparent 1.5px)",
+            backgroundSize: "24px 24px",
+        }}/>
 
-function Slot({ scannerRef, active }) {
-  return (
-    <div ref={scannerRef} className="absolute right-5 top-5 z-20 w-28 sm:w-36">
-      <div className="rounded-[1.125rem] bg-black p-2 shadow-[0_0.875rem_1.625rem_rgba(0,0,0,0.3)]">
-        <div className={`h-5 rounded-full bg-[#1D6098] ${active ? "photobooth-scan-pulse" : ""}`} />
-        <div className="mt-2 flex items-center justify-between px-1 font-mono text-[0.5rem] text-white/80">
-          <span>₱50</span>
-          <span>SCAN</span>
-        </div>
-      </div>
-    </div>
-  )
-}
+      {/* Machine body */}
+      <div className="relative w-full max-w-[1280px] mx-4 rounded-[48px] border-[6px] border-black shadow-[0_20px_80px_rgba(0,0,0,0.25),inset_0_2px_0_rgba(255,255,255,0.6)]" style={{ background: "#f0f8ff", minHeight: "min(90vh, 820px)" }}>
+        {/* Top accent strip */}
+        <div className="absolute top-0 left-0 right-0 h-3 rounded-t-[42px]" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)" }}/>
 
-export default function Photobooth() {
-  const [step, setStep] = useState("welcome")
-  const [selectedLayout, setSelectedLayout] = useState(layouts[0])
-  const [selectedBackground, setSelectedBackground] = useState(backgrounds[0])
-  const [billPosition, setBillPosition] = useState({ x: 0, y: 0 })
-  const [billInserted, setBillInserted] = useState(false)
-  const [paymentAccepted, setPaymentAccepted] = useState(false)
-  const [cameraError, setCameraError] = useState("")
-  const [countdown, setCountdown] = useState(null)
-  const [capturedPhoto, setCapturedPhoto] = useState("")
-  const [isCompositing, setIsCompositing] = useState(false)
-  const [compositedPhoto, setCompositedPhoto] = useState("")
-  const [stripImage, setStripImage] = useState("")
-  const scannerRef = useRef(null)
-  const billRef = useRef(null)
-  const dragRef = useRef(null)
-  const videoRef = useRef(null)
-  const streamRef = useRef(null)
-  const printTimerRef = useRef(null)
-
-  const stepIndex = steps.indexOf(step)
-  const canGoBack = step !== "welcome"
-
-  const currentPhotoForPreview = compositedPhoto || capturedPhoto
-
-  useEffect(() => {
-    if (step !== "camera") {
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-      return
-    }
-
-    let cancelled = false
-    setCameraError("")
-    setCountdown(null)
-
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
-        if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop())
-          return
-        }
-        streamRef.current = stream
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          await videoRef.current.play()
-        }
-      } catch {
-        setCameraError("Camera permission was denied. Enable camera access to take a photobooth photo.")
-      }
-    }
-
-    startCamera()
-
-    return () => {
-      cancelled = true
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-    }
-  }, [step])
-
-  useEffect(() => {
-    return () => window.clearTimeout(printTimerRef.current)
-  }, [])
-
-  useEffect(() => {
-    if (!capturedPhoto || step !== "background") return
-
-    let cancelled = false
-    setIsCompositing(true)
-    composeLocalBackdrop(capturedPhoto, selectedBackground)
-      .then((url) => {
-        if (!cancelled) setCompositedPhoto(url)
-      })
-      .finally(() => {
-        if (!cancelled) setIsCompositing(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [capturedPhoto, selectedBackground, step])
-
-  const progress = useMemo(() => Math.max(0, (stepIndex / (steps.length - 1)) * 100), [stepIndex])
-
-  function resetBooth() {
-    window.clearTimeout(printTimerRef.current)
-    setStep("welcome")
-    setSelectedLayout(layouts[0])
-    setSelectedBackground(backgrounds[0])
-    setBillPosition({ x: 0, y: 0 })
-    setBillInserted(false)
-    setPaymentAccepted(false)
-    setCameraError("")
-    setCountdown(null)
-    setCapturedPhoto("")
-    setIsCompositing(false)
-    setCompositedPhoto("")
-    setStripImage("")
-  }
-
-  function goBack() {
-    window.clearTimeout(printTimerRef.current)
-    if (step === "payment") setStep("welcome")
-    if (step === "layout") setStep("payment")
-    if (step === "camera") setStep("layout")
-    if (step === "confirm") setStep("camera")
-    if (step === "background") setStep("confirm")
-    if (step === "printing") setStep("background")
-    if (step === "thanks") setStep("background")
-  }
-
-  function startPayment() {
-    setBillPosition({ x: 0, y: 0 })
-    setBillInserted(false)
-    setPaymentAccepted(false)
-    setStep("payment")
-  }
-
-  function onBillPointerDown(event) {
-    if (billInserted) return
-    event.currentTarget.setPointerCapture(event.pointerId)
-    dragRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      originalX: billPosition.x,
-      originalY: billPosition.y,
-    }
-  }
-
-  function onBillPointerMove(event) {
-    if (!dragRef.current || billInserted) return
-    setBillPosition({
-      x: dragRef.current.originalX + event.clientX - dragRef.current.startX,
-      y: dragRef.current.originalY + event.clientY - dragRef.current.startY,
-    })
-  }
-
-  function onBillPointerUp() {
-    if (!dragRef.current || billInserted) return
-    dragRef.current = null
-
-    const scannerBox = scannerRef.current?.getBoundingClientRect()
-    const billBox = billRef.current?.getBoundingClientRect()
-    if (!scannerBox || !billBox) return
-
-    const billCenterX = billBox.left + billBox.width / 2
-    const billCenterY = billBox.top + billBox.height / 2
-    const inserted =
-      billCenterX > scannerBox.left &&
-      billCenterX < scannerBox.right &&
-      billCenterY > scannerBox.top &&
-      billCenterY < scannerBox.bottom
-
-    if (!inserted) {
-      setBillPosition({ x: 0, y: 0 })
-      return
-    }
-
-    setBillInserted(true)
-    setPaymentAccepted(true)
-    playAcceptedTone()
-    setTimeout(() => setStep("layout"), 1100)
-  }
-
-  function capturePhoto() {
-    if (!videoRef.current || countdown !== null || cameraError) return
-    let next = 3
-    setCountdown(next)
-    const timer = window.setInterval(() => {
-      next -= 1
-      if (next > 0) {
-        setCountdown(next)
-        return
-      }
-
-      window.clearInterval(timer)
-      const video = videoRef.current
-      const canvas = document.createElement("canvas")
-      canvas.width = video.videoWidth || 900
-      canvas.height = video.videoHeight || 1200
-      const ctx = canvas.getContext("2d")
-      ctx.translate(canvas.width, 0)
-      ctx.scale(-1, 1)
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-      setCapturedPhoto(canvas.toDataURL("image/png"))
-      setCompositedPhoto("")
-      setIsCompositing(false)
-      setCountdown(null)
-      setStep("confirm")
-    }, 900)
-  }
-
-  async function startPrinting() {
-    if (!compositedPhoto) return
-    const strip = await composeStrip(compositedPhoto, selectedLayout, selectedBackground)
-    setStripImage(strip)
-    setStep("printing")
-    window.clearTimeout(printTimerRef.current)
-    printTimerRef.current = window.setTimeout(() => setStep("thanks"), 4300)
-  }
-
-  return (
-    <section id="photobooth" className="relative overflow-hidden bg-white py-28 text-black">
-      <div className="max-w-[73.75rem] mx-auto px-6 sm:px-8">
-        <div className="mb-8 max-w-2xl">
-          <span className="kicker-dash font-mono text-xs text-[#1D6098] flex items-center gap-2.5 mb-3.5">
-            photobooth
-          </span>
-          <h2 className="font-display font-semibold text-[clamp(1.9rem,4vw,2.9rem)]">
-            mari-photo ⊹ ࣪ ˖
-          </h2>
+        {/* Brand badge top-left */}
+        <div className="absolute top-5 left-8 z-20">
+          <GradientText size="text-2xl">mari-photo ⊹ ࣪ ˖</GradientText>
         </div>
 
-        <div className="relative mx-auto max-w-[61.25rem] rounded-[2rem] bg-[#30A0FE] p-3 shadow-[0_1.75rem_4.375rem_rgba(29,96,152,0.34)] sm:p-5">
-          <div className="relative min-h-[47.5rem] overflow-hidden rounded-[1.625rem] border-[0.625rem] border-black bg-[#CCE6FC] sm:border-[0.875rem]">
-            <Slot scannerRef={scannerRef} active={step === "payment"} />
-
-            <div className="absolute left-1/2 bottom-6 z-20 w-[min(22.5rem,72vw)] -translate-x-1/2">
-              <div className="rounded-[1.125rem] bg-black p-3 shadow-[0_1.125rem_1.75rem_rgba(0,0,0,0.3)]">
-                <div className="h-5 rounded-full bg-white/90" />
-                <p className="mt-2 text-center font-mono text-[0.5625rem] uppercase tracking-[0.28em] text-white/75">
-                  print output
-                </p>
-              </div>
+        {/* Right sidebar — money scanner + printer */}
+        <div className="absolute right-0 top-0 bottom-0 w-[180px] flex flex-col items-center justify-between py-12 pr-6 pl-3 gap-6">
+          {/* Money scanner */}
+          <div className="flex flex-col items-center gap-2 w-full">
+            <div className={`w-full rounded-[28px] border-[5px] border-black shadow-[0_4px_20px_rgba(0,0,0,0.3),inset_0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 ${moneySlotHighlight ? "shadow-[0_0_0_4px_#30A0FE,0_4px_20px_rgba(48,160,254,0.5)]" : ""}`} style={{ background: "#fff", padding: "18px 20px 22px" }}>
+              <div className={`h-[14px] rounded-[8px] transition-all duration-300 ${moneySlotHighlight ? "bg-[#30A0FE] shadow-[0_0_12px_#30A0FE]" : "bg-black"}`}/>
             </div>
+            <p className="text-[10px] text-center font-semibold text-black/60 leading-tight">
+              *Coins are not accepted.
+            </p>
+          </div>
 
-            <div className="absolute inset-x-5 top-5 z-10 flex items-center justify-between gap-3 pr-32 sm:pr-44">
-              {canGoBack ? (
-                <button
-                  type="button"
-                  onClick={goBack}
-                  className="rounded-full bg-white/90 px-4 py-2 font-mono text-[0.6875rem] font-bold uppercase text-[#1D6098] shadow-[0_0.5rem_1.125rem_rgba(29,96,152,0.16)] transition hover:-translate-x-0.5"
-                >
-                  Back
-                </button>
-              ) : (
-                <span />
-              )}
-              <div className="hidden flex-1 overflow-hidden rounded-full bg-white/55 p-1 sm:block">
-                <div className="h-2 rounded-full bg-[#1D6098] transition-all duration-500" style={{ width: `${progress}%` }} />
-              </div>
-              <span className="rounded-full bg-black px-3 py-2 font-mono text-[0.625rem] uppercase text-white">
-                {stepLabels[step]}
-              </span>
+          {/* Printer slot */}
+          <div className="w-full rounded-[28px] border-[5px] border-black shadow-[0_4px_20px_rgba(0,0,0,0.3),inset_0_2px_8px_rgba(0,0,0,0.2)] overflow-hidden relative" style={{ background: "#fff", minHeight: "160px" }}>
+            {/* Slot opening */}
+            <div className="absolute bottom-0 left-0 right-0 h-[5px] bg-black/10"/>
+            <div className="h-full flex flex-col items-center justify-end pb-3">
+              <div className="w-[70%] h-[6px] rounded-full bg-black/15 mb-1"/>
+              <div className="w-[50%] h-[4px] rounded-full bg-black/10"/>
             </div>
+            {printerActive && (<div className="absolute inset-0" style={{
+                background: "repeating-linear-gradient(0deg, rgba(48,160,254,0.08) 0px, rgba(48,160,254,0.08) 4px, transparent 4px, transparent 8px)",
+                animation: "printer-lines 0.3s linear infinite",
+            }}/>)}
+            {printStrip && (<div className="absolute bottom-0 left-0 right-0 flex justify-center" style={{ animation: "strip-emerge 3s ease-out forwards" }}>
+                {printStrip}
+              </div>)}
+          </div>
+          <p className="text-[10px] text-center font-semibold text-black/40 leading-tight">PRINTER</p>
+        </div>
 
-            <div className="relative z-[5] min-h-[47.5rem] px-5 pb-36 pt-28 sm:px-8">
-              <AnimatePresence mode="wait">
-                {step === "welcome" && (
-                  <motion.div
-                    key="welcome"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="mx-auto flex max-w-xl flex-col items-center justify-center text-center"
-                  >
-                    <div className="mb-8 rounded-[1.75rem] border-[0.5rem] border-black bg-white p-7 shadow-[0_1.125rem_2.25rem_rgba(29,96,152,0.22)]">
-                      <p className="font-mono text-[0.6875rem] uppercase tracking-[0.38em] text-[#1D6098]">self-service</p>
-                      <h3 className="mt-3 font-display text-[clamp(2.2rem,7vw,4.4rem)] leading-none text-black">
-                        mari-photo <span className="text-[#30A0FE]">⊹ ࣪ ˖</span>
-                      </h3>
-                      <p className="mx-auto mt-5 max-w-sm text-[0.9375rem] leading-relaxed text-black/65">
-                        Step in, insert ₱50, pick your strip, snap a photo, choose a backdrop, and print.
-                      </p>
-                    </div>
-                    <StepButton onClick={startPayment}>Start</StepButton>
-                  </motion.div>
-                )}
-
-                {step === "payment" && (
-                  <motion.div
-                    key="payment"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="relative mx-auto min-h-[35rem] max-w-3xl"
-                  >
-                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-7 shadow-[0_1.125rem_2.25rem_rgba(29,96,152,0.18)]">
-                      <p className="font-mono text-[0.6875rem] uppercase tracking-[0.28em] text-[#1D6098]">insert payment</p>
-                      <h3 className="mt-2 font-display text-4xl">₱50 photo session</h3>
-                      <p className="mt-3 max-w-md text-[0.875rem] text-black/60">Drag the bill into the scanner slot.</p>
-                      {paymentAccepted && (
-                        <p className="mt-5 inline-flex rounded-full bg-[#CCE6FC] px-4 py-2 font-mono text-[0.6875rem] font-bold text-[#1D6098]">
-                          Payment Accepted
-                        </p>
-                      )}
-                    </div>
-
-                    <motion.img
-                      ref={billRef}
-                      src="/items/fifty.png"
-                      alt="Fifty peso bill"
-                      onPointerDown={onBillPointerDown}
-                      onPointerMove={onBillPointerMove}
-                      onPointerUp={onBillPointerUp}
-                      onPointerCancel={onBillPointerUp}
-                      initial={{ x: "-120%", rotate: -4, opacity: 0 }}
-                      animate={
-                        billInserted
-                          ? { x: "calc(100vw - 16.25rem)", y: -36, opacity: 0, scale: 0.35 }
-                          : { x: billPosition.x, y: billPosition.y, rotate: -1, opacity: 1, scale: 1 }
-                      }
-                      transition={{ duration: billInserted ? 0.55 : 0.12, ease: "easeOut" }}
-                      className="absolute left-0 top-72 z-30 w-[min(24.375rem,72vw)] touch-none select-none rounded-md shadow-[0_1rem_1.75rem_rgba(0,0,0,0.22)]"
-                      draggable={false}
-                    />
-                  </motion.div>
-                )}
-
-                {step === "layout" && (
-                  <motion.div
-                    key="layout"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="mx-auto max-w-4xl"
-                  >
-                    <div className="mb-6 text-center">
-                      <h3 className="font-display text-4xl">Choose your strip</h3>
-                      <p className="mt-2 text-[0.875rem] text-black/60">Pick a print style before heading into the booth.</p>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                      {layouts.map((layout) => (
-                        <button
-                          type="button"
-                          key={layout.id}
-                          onClick={() => setSelectedLayout(layout)}
-                          className={`rounded-[1.5rem] border-[0.3125rem] bg-white p-4 text-left shadow-[0_1rem_1.75rem_rgba(29,96,152,0.18)] transition-all duration-200 hover:-translate-y-1 ${
-                            selectedLayout.id === layout.id ? "border-[#1D6098]" : "border-black"
-                          }`}
-                        >
-                          <div className={`grid h-64 gap-2 rounded-[1rem] bg-black p-3 ${layout.className}`}>
-                            {Array.from({ length: layout.frames }).map((_, i) => (
-                              <span key={i} className="rounded-md bg-[linear-gradient(145deg,#CCE6FC,#FFFFFF)]" />
-                            ))}
-                          </div>
-                          <span className="mt-4 block font-mono text-[0.6875rem] font-bold uppercase text-[#1D6098]">
-                            {layout.name}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="mt-7 flex justify-center">
-                      <StepButton onClick={() => setStep("camera")} disabled={!selectedLayout}>
-                        Continue
-                      </StepButton>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === "camera" && (
-                  <motion.div
-                    key="camera"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="mx-auto max-w-3xl text-center"
-                  >
-                    <div className="relative overflow-hidden rounded-[1.75rem] border-[0.5rem] border-black bg-black shadow-[0_1.25rem_2.375rem_rgba(29,96,152,0.24)]">
-                      {cameraError ? (
-                        <div className="flex aspect-[4/3] items-center justify-center bg-white p-8 text-center text-sm text-black/65">
-                          {cameraError}
-                        </div>
-                      ) : (
-                        <video ref={videoRef} className="aspect-[4/3] w-full -scale-x-100 object-cover" playsInline muted />
-                      )}
-                      {countdown !== null && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                          <span className="photobooth-count-pop font-display text-[clamp(5rem,18vw,9rem)] text-white">
-                            {countdown}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-7 flex justify-center">
-                      <StepButton onClick={capturePhoto} disabled={Boolean(cameraError) || countdown !== null}>
-                        Capture
-                      </StepButton>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === "confirm" && (
-                  <motion.div
-                    key="confirm"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="mx-auto max-w-3xl text-center"
-                  >
-                    <div className="mx-auto max-w-lg rounded-[1.75rem] border-[0.5rem] border-black bg-white p-4 shadow-[0_1.25rem_2.375rem_rgba(29,96,152,0.24)]">
-                      <img src={capturedPhoto} alt="Captured photobooth preview" className="aspect-[4/3] w-full rounded-[1.125rem] object-cover" />
-                    </div>
-                    <div className="mt-7 flex flex-wrap justify-center gap-3">
-                      <StepButton variant="ghost" onClick={() => setStep("camera")}>
-                        Retake Photo
-                      </StepButton>
-                      <StepButton onClick={() => setStep("background")}>Use Photo</StepButton>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === "background" && (
-                  <motion.div
-                    key="background"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="mx-auto grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[1fr_0.85fr]"
-                  >
-                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-4 shadow-[0_1.25rem_2.375rem_rgba(29,96,152,0.24)]">
-                      <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[1.125rem]" style={{ background: selectedBackground.css }}>
-                        {isCompositing ? (
-                          <div className="flex flex-col items-center gap-3 font-mono text-[0.75rem] uppercase tracking-wide text-[#1D6098]">
-                            <span className="h-10 w-10 animate-spin rounded-full border-4 border-[#CCE6FC] border-t-[#1D6098]" />
-                            preparing backdrop
-                          </div>
-                        ) : currentPhotoForPreview ? (
-                          <img src={currentPhotoForPreview} alt="Selected photobooth background preview" className="h-full w-full object-cover" />
-                        ) : null}
-                      </div>
-                      <p className="mt-4 rounded-[1.125rem] bg-[#CCE6FC] p-4 text-sm leading-relaxed text-[#1D6098]">
-                        Local backdrop mode uses an in-browser portrait matte, so it works without an API key or upload.
-                      </p>
-                    </div>
-                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-5">
-                      <h3 className="font-display text-3xl">Choose backdrop</h3>
-                      <div className="mt-5 grid grid-cols-1 gap-3">
-                        {backgrounds.map((background) => (
-                          <button
-                            type="button"
-                            key={background.id}
-                            onClick={() => setSelectedBackground(background)}
-                            className={`flex items-center gap-4 rounded-[1.125rem] border-4 p-3 text-left transition hover:-translate-y-0.5 ${
-                              selectedBackground.id === background.id ? "border-[#1D6098]" : "border-[#CCE6FC]"
-                            }`}
-                          >
-                            <span className="h-12 w-16 rounded-[0.75rem] border border-black/10" style={{ background: background.css }} />
-                            <span className="font-mono text-[0.75rem] font-bold uppercase text-black/75">{background.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                      <div className="mt-6">
-                        <StepButton onClick={startPrinting} disabled={!compositedPhoto || isCompositing}>
-                          Print Strip
-                        </StepButton>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === "printing" && (
-                  <motion.div
-                    key="printing"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="mx-auto max-w-xl text-center"
-                  >
-                    <h3 className="font-display text-4xl">Printing...</h3>
-                    <p className="mt-3 text-sm text-black/60">Please wait for your strip.</p>
-                    {stripImage && (
-                      <img
-                        src={stripImage}
-                        alt="Printed mari-photo strip"
-                        className="photobooth-print-out absolute left-1/2 bottom-[5.25rem] z-10 w-[min(16.25rem,58vw)] -translate-x-1/2 rounded-sm shadow-[0_1.125rem_2rem_rgba(0,0,0,0.3)]"
-                      />
-                    )}
-                  </motion.div>
-                )}
-
-                {step === "thanks" && (
-                  <motion.div
-                    key="thanks"
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
-                    className="mx-auto flex max-w-xl flex-col items-center text-center"
-                  >
-                    {stripImage && (
-                      <img
-                        src={stripImage}
-                        alt="Finished mari-photo strip"
-                        className="mb-6 max-h-[22.5rem] rounded-sm shadow-[0_1.125rem_2rem_rgba(0,0,0,0.28)]"
-                      />
-                    )}
-                    <div className="rounded-[1.75rem] border-[0.5rem] border-black bg-white p-7">
-                      <h3 className="font-display text-4xl">Thank you for using mari-photo ⊹ ࣪ ˖</h3>
-                      <p className="mt-4 text-[0.9375rem] text-black/65">We hope you enjoyed your visit!</p>
-                      <div className="mt-6">
-                        <StepButton onClick={resetBooth}>Return Home</StepButton>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+        {/* Main screen area */}
+        <div className="pr-[180px] pl-0 pt-0 pb-0 h-full">
+          <div className="ml-8 mr-0 mt-6 mb-6 rounded-[36px] border-[5px] border-black overflow-hidden shadow-[inset_0_4px_20px_rgba(0,0,0,0.35)]" style={{
+            minHeight: "min(calc(90vh - 48px), 760px)",
+            background: "linear-gradient(160deg, #ffffff 0%, #CCE6FC 100%)",
+        }}>
+            {children}
           </div>
         </div>
       </div>
-    </section>
-  )
+    </section>);
+}
+// ─── SCREEN 1: Welcome ────────────────────────────────────────────────────────
+function WelcomeScreen({ onStart }) {
+    return (<MachineShell>
+      <div className="flex flex-col items-center justify-center h-full min-h-[680px] gap-8 px-8 py-12">
+        {/* Floating decorative circles */}
+        <div className="absolute top-16 right-20 w-24 h-24 rounded-full opacity-20 pointer-events-none" style={{ background: "#30A0FE", animation: "float-gentle 4s ease-in-out infinite" }}/>
+        <div className="absolute bottom-24 left-16 w-16 h-16 rounded-full opacity-15 pointer-events-none" style={{ background: "#1D6098", animation: "float-gentle 5s ease-in-out infinite 1s" }}/>
+
+        <div style={{ animation: "fade-in 0.7s ease-out" }} className="flex flex-col items-center gap-6">
+          {/* Big brand */}
+          <div className="text-center">
+            <div className="text-7xl font-black bg-clip-text text-transparent leading-tight" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #2680CB 50%, #1D6098 100%)" }}>
+              mari-photo
+            </div>
+            <div className="text-4xl font-black bg-clip-text text-transparent" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #2680CB 50%, #1D6098 100%)" }}>
+              ⊹ ࣪ ˖
+            </div>
+          </div>
+
+          {/* Welcome message */}
+          <div className="text-center max-w-md">
+            <p className="text-xl font-bold text-[#1D6098] mb-1">Welcome!</p>
+            <p className="text-base text-[#30A0FE]/80 font-medium">
+              Your very own digital photobooth experience.
+            </p>
+          </div>
+
+          {/* Instruction hint */}
+          <div className="rounded-3xl border-2 border-[#CCE6FC] px-8 py-4 text-center" style={{ background: "rgba(204,230,252,0.4)" }}>
+            <p className="text-sm font-semibold text-[#1D6098]">
+              📸 Take photos · Choose backgrounds · Print your strip
+            </p>
+          </div>
+
+          {/* Start button */}
+          <button onClick={onStart} className="mt-2 px-16 py-5 rounded-full text-white font-black text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 relative overflow-hidden group" style={{
+            backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)",
+            animation: "pulse-ring 2.5s ease-in-out infinite",
+        }}>
+            <span className="relative z-10 flex items-center gap-2">
+              Start <span style={{ animation: "bounce-arrow 1.2s ease-in-out infinite" }}>→</span>
+            </span>
+          </button>
+
+          <p className="text-xs text-black/40 font-medium">{PRICE_LABEL} required · Bills only</p>
+        </div>
+      </div>
+    </MachineShell>);
+}
+// ─── SCREEN 2: Payment ────────────────────────────────────────────────────────
+function PaymentScreen({ onPaid }) {
+    const [billPos, setBillPos] = useState({ x: 0, y: 0 });
+    const [dragging, setDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0, bx: 0, by: 0 });
+    const [paid, setPaid] = useState(false);
+    const [sucked, setSucked] = useState(false);
+    const [showAccepted, setShowAccepted] = useState(false);
+    const billRef = useRef(null);
+    const slotRef = useRef(null);
+    const onPointerDown = (e) => {
+        if (paid)
+            return;
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setDragging(true);
+        setDragStart({ x: e.clientX, y: e.clientY, bx: billPos.x, by: billPos.y });
+    };
+    const onPointerMove = (e) => {
+        if (!dragging || paid)
+            return;
+        setBillPos({
+            x: dragStart.bx + (e.clientX - dragStart.x),
+            y: dragStart.by + (e.clientY - dragStart.y),
+        });
+    };
+    const onPointerUp = () => {
+        if (!dragging || paid)
+            return;
+        setDragging(false);
+        // Check overlap with slot
+        const bill = billRef.current?.getBoundingClientRect();
+        const slot = slotRef.current?.getBoundingClientRect();
+        if (bill && slot) {
+            const overlapX = Math.max(0, Math.min(bill.right, slot.right) - Math.max(bill.left, slot.left));
+            const overlapY = Math.max(0, Math.min(bill.bottom, slot.bottom) - Math.max(bill.top, slot.top));
+            if (overlapX > 40 && overlapY > 10) {
+                setPaid(true);
+                setSucked(true);
+                setTimeout(() => {
+                    setShowAccepted(true);
+                    setTimeout(() => onPaid(), 1400);
+                }, 600);
+            }
+        }
+    };
+    return (<MachineShell moneySlotHighlight={true}>
+      <div className="relative flex flex-col items-center justify-center h-full min-h-[680px] gap-6 px-8 py-10 select-none">
+
+        {/* Title */}
+        <div style={{ animation: "fade-in 0.5s ease-out" }} className="text-center">
+          <GradientText size="text-5xl">Payment</GradientText>
+          <p className="text-[#1D6098] font-semibold mt-2">Insert {PRICE_LABEL} into the money scanner →</p>
+        </div>
+
+        {/* Instruction hint */}
+        <div className="rounded-2xl px-6 py-3 border-2 border-dashed border-[#30A0FE]/50 text-center" style={{ background: "rgba(204,230,252,0.3)" }}>
+          <p className="text-sm font-medium text-[#1D6098]" style={{ fontFamily: "'Hi Melody', cursive" }}>
+            drag the bill to the scanner! ⊹
+          </p>
+        </div>
+
+        {/* Bill — draggable */}
+        <div ref={billRef} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} className={`cursor-grab active:cursor-grabbing touch-none z-30 ${sucked ? "pointer-events-none" : ""}`} style={{
+            transform: `translate(${billPos.x}px, ${billPos.y}px)`,
+            animation: sucked
+                ? "bill-sucked 0.5s ease-in forwards"
+                : dragging
+                    ? "none"
+                    : "slide-in-bill 0.8s ease-out",
+            transition: dragging ? "none" : sucked ? "none" : "filter 0.2s",
+            filter: dragging ? "drop-shadow(0 12px 24px rgba(0,0,0,0.35))" : "drop-shadow(0 4px 8px rgba(0,0,0,0.2))",
+        }}>
+          {/* Philippine 50-peso bill (SVG approximation) */}
+          <div className="relative rounded-2xl overflow-hidden border-2 border-black/20" style={{ width: 300, height: 130 }}>
+            {/* Bill background */}
+            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #e8a83a 0%, #d4941c 30%, #c4841a 60%, #d4941c 100%)" }}/>
+            {/* Texture overlay */}
+            <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.3) 5px, rgba(255,255,255,0.3) 6px)",
+        }}/>
+            {/* Denomination */}
+            <div className="absolute inset-0 flex items-center justify-between px-4">
+              <div>
+                <p className="text-white font-black text-3xl" style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.4)" }}>{PRICE_LABEL}</p>
+                <p className="text-white/80 text-[10px] font-bold">REPUBLIKA NG PILIPINAS</p>
+                <p className="text-white/70 text-[9px]">BANGKO SENTRAL NG PILIPINAS</p>
+              </div>
+              <div className="w-20 h-20 rounded-full border-2 border-white/40 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.15)" }}>
+                <p className="text-white font-black text-lg">40</p>
+              </div>
+            </div>
+            {/* Shine */}
+            <div className="absolute top-0 left-0 right-0 h-1/2 opacity-20 rounded-t-2xl" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 100%)" }}/>
+          </div>
+        </div>
+
+        {/* Money scanner target (visual) */}
+        <div ref={slotRef} className="relative flex flex-col items-center gap-2">
+          <p className="text-xs font-bold text-[#30A0FE]/70 tracking-widest uppercase">Insert here</p>
+          <div className="w-64 h-12 rounded-2xl border-4 border-dashed border-[#30A0FE] flex items-center justify-center transition-all duration-300" style={{ background: "rgba(48,160,254,0.08)", boxShadow: "0 0 20px rgba(48,160,254,0.2)" }}>
+            <div className="w-36 h-3 rounded-full bg-[#30A0FE]/30"/>
+          </div>
+          <p className="text-xs text-black/40">↑ money scanner</p>
+        </div>
+
+        {/* Payment accepted overlay */}
+        {showAccepted && (<div className="absolute inset-0 flex flex-col items-center justify-center z-50 rounded-[31px]" style={{ background: "rgba(204,230,252,0.9)", animation: "scale-in 0.3s ease-out" }}>
+            <div className="text-6xl mb-4">✅</div>
+            <GradientText size="text-4xl">Payment Accepted!</GradientText>
+            <p className="text-[#1D6098] font-semibold mt-2">{PRICE_LABEL}.00 — Thank you!</p>
+          </div>)}
+      </div>
+    </MachineShell>);
+}
+// ─── SCREEN 3: Layout Chooser ────────────────────────────────────────────────
+function LayoutScreen({ selected, onSelect, onContinue, onBack, }) {
+    return (<MachineShell>
+      <div className="flex flex-col h-full min-h-[680px] px-8 py-8 gap-6" style={{ animation: "fade-in 0.4s ease-out" }}>
+        {/* Header */}
+        <div className="rounded-3xl py-4 px-8 text-center" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)" }}>
+          <p className="text-white font-extrabold text-2xl tracking-tight">Choose the type of the photo.</p>
+        </div>
+
+        {/* Grid of layout cards */}
+        <div className="grid grid-cols-2 gap-5 flex-1">
+          {LAYOUTS.map((layout) => {
+            const isSelected = selected === layout.id;
+            return (<button key={layout.id} onClick={() => onSelect(layout.id)} className={`rounded-3xl border-4 p-4 flex flex-col items-center gap-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${isSelected
+                    ? "border-[#30A0FE] shadow-[0_0_0_2px_#30A0FE,0_8px_32px_rgba(48,160,254,0.3)]"
+                    : "border-black/10 shadow-md hover:border-[#30A0FE]/50"}`} style={{ background: isSelected ? "rgba(204,230,252,0.5)" : "rgba(255,255,255,0.7)" }}>
+                {/* Strip preview */}
+                <div className="flex-1 w-full flex items-center justify-center">
+                  <LayoutPreview cols={layout.cols} rows={layout.rows}/>
+                </div>
+                <div className="text-center">
+                  <p className={`font-black text-base ${isSelected ? "text-[#1D6098]" : "text-black/70"}`}>
+                    {layout.label}
+                  </p>
+                  <p className="text-xs text-black/40 font-medium">{layout.desc}</p>
+                </div>
+                {isSelected && (<div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-black" style={{ background: "#30A0FE" }}>
+                    ✓
+                  </div>)}
+              </button>);
+        })}
+        </div>
+
+        {/* Footer buttons */}
+        <div className="flex justify-between items-center">
+          <button onClick={onBack} className="px-6 py-3 rounded-full border-2 border-[#1D6098] text-[#1D6098] font-bold text-sm hover:bg-[#1D6098]/10 transition-all">
+            ← Back
+          </button>
+          <button onClick={onContinue} disabled={!selected} className={`px-10 py-4 rounded-full text-white font-black text-lg shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 ${!selected ? "opacity-40 cursor-not-allowed" : ""}`} style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)" }}>
+            Continue →
+          </button>
+        </div>
+      </div>
+    </MachineShell>);
+}
+function LayoutPreview({ cols, rows }) {
+    const cellW = cols === 1 ? 80 : 60;
+    const cellH = rows === 1 ? 80 : rows === 2 ? 55 : 40;
+    return (<div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${cols}, ${cellW}px)` }}>
+      {Array.from({ length: cols * rows }).map((_, i) => (<div key={i} className="rounded-lg border-2 border-black/15" style={{
+                width: cellW,
+                height: cellH,
+                background: "linear-gradient(135deg, #CCE6FC 0%, #f0f8ff 100%)",
+            }}/>))}
+    </div>);
+}
+// ─── SCREEN 4: Camera ────────────────────────────────────────────────────────
+function CameraScreen({ layout, onCapture, onBack, }) {
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const [camError, setCamError] = useState(null);
+    const [countdown, setCountdown] = useState(null);
+    const [capturing, setCapturing] = useState(false);
+    const [flash, setFlash] = useState(false);
+    const [shots, setShots] = useState([]);
+    const totalShots = layout.cols * layout.rows;
+    const streamRef = useRef(null);
+    useEffect(() => {
+        navigator.mediaDevices
+            .getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } })
+            .then((stream) => {
+            streamRef.current = stream;
+            if (videoRef.current)
+                videoRef.current.srcObject = stream;
+        })
+            .catch(() => setCamError("Camera permission denied. Please allow camera access and try again."));
+        return () => streamRef.current?.getTracks().forEach((t) => t.stop());
+    }, []);
+    const takeShot = useCallback(() => {
+        return new Promise((resolve) => {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            if (!video || !canvas)
+                return resolve("");
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext("2d");
+            if (!ctx)
+                return resolve("");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", 0.92));
+        });
+    }, []);
+    const startCapture = async () => {
+        if (capturing)
+            return;
+        setCapturing(true);
+        const captured = [];
+        for (let i = 0; i < totalShots; i++) {
+            // countdown 3-2-1
+            for (let c = 3; c >= 1; c--) {
+                setCountdown(c);
+                await new Promise((r) => setTimeout(r, 900));
+            }
+            setCountdown(null);
+            setFlash(true);
+            const dataUrl = await takeShot();
+            captured.push(dataUrl);
+            setShots([...captured]);
+            await new Promise((r) => setTimeout(r, 600));
+            setFlash(false);
+            if (i < totalShots - 1)
+                await new Promise((r) => setTimeout(r, 400));
+        }
+        setCapturing(false);
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        onCapture(captured);
+    };
+    return (<MachineShell>
+      <div className="flex flex-col h-full min-h-[680px] px-6 py-6 gap-4" style={{ animation: "fade-in 0.4s ease-out" }}>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <button onClick={onBack} className="px-5 py-2 rounded-full border-2 border-[#1D6098] text-[#1D6098] font-bold text-sm hover:bg-[#1D6098]/10 transition-all">
+            ← Back
+          </button>
+          <GradientText size="text-2xl">Camera</GradientText>
+          <div className="text-sm font-bold text-[#1D6098]/60">
+            {shots.length}/{totalShots} shots
+          </div>
+        </div>
+
+        {/* Camera area */}
+        <div className="flex-1 relative rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-black">
+          {camError ? (<div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-8 text-center" style={{ background: "linear-gradient(160deg, #CCE6FC 0%, #f0f8ff 100%)" }}>
+              <div className="text-5xl">📷</div>
+              <p className="text-[#1D6098] font-bold text-lg">{camError}</p>
+            </div>) : (<>
+              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }}/>
+              {/* Guide frame */}
+              <div className="absolute inset-6 rounded-2xl border-4 border-white/60 pointer-events-none"/>
+
+              {/* Countdown */}
+              {countdown !== null && (<div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ background: "rgba(0,0,0,0.4)" }}>
+                  <div key={countdown} className="text-[120px] font-black text-white" style={{ animation: "countdown-pop 0.9s ease-out forwards", textShadow: "0 0 40px rgba(48,160,254,0.8)" }}>
+                    {countdown}
+                  </div>
+                </div>)}
+
+              {/* Flash */}
+              {flash && (<div className="absolute inset-0 bg-white pointer-events-none" style={{ animation: "flash-white 0.5s ease-out forwards" }}/>)}
+            </>)}
+        </div>
+
+        <canvas ref={canvasRef} className="hidden"/>
+
+        {/* Shot thumbnails */}
+        {shots.length > 0 && (<div className="flex gap-2 justify-center flex-wrap">
+            {shots.map((s, i) => (<div key={i} className="w-14 h-14 rounded-xl overflow-hidden border-2 border-[#30A0FE] shadow">
+                <img src={s} className="w-full h-full object-cover" alt={`Shot ${i + 1}`}/>
+              </div>))}
+          </div>)}
+
+        {/* Capture button */}
+        {!capturing && shots.length < totalShots && (<button onClick={startCapture} disabled={!!camError} className="mx-auto w-20 h-20 rounded-full border-4 border-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)", animation: "pulse-ring 2s ease-in-out infinite" }}>
+            <div className="w-12 h-12 rounded-full bg-white"/>
+          </button>)}
+
+        {capturing && countdown === null && (<div className="mx-auto text-sm font-bold text-[#1D6098] animate-pulse">📸 Getting ready...</div>)}
+      </div>
+    </MachineShell>);
+}
+// ─── SCREEN 5: Confirm ────────────────────────────────────────────────────────
+function ConfirmScreen({ shots, layout, onConfirm, onRetake, onBack, }) {
+    return (<MachineShell>
+      <div className="flex flex-col h-full min-h-[680px] px-6 py-6 gap-5" style={{ animation: "fade-in 0.4s ease-out" }}>
+        <div className="flex items-center justify-between">
+          <button onClick={onBack} className="px-5 py-2 rounded-full border-2 border-[#1D6098] text-[#1D6098] font-bold text-sm hover:bg-[#1D6098]/10 transition-all">
+            ← Back
+          </button>
+          <GradientText size="text-2xl">Your Photos</GradientText>
+          <GradientText size="text-base">mari-photo ⊹ ˖</GradientText>
+        </div>
+
+        {/* Strip preview */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white" style={{ background: "#fff", padding: 8 }}>
+            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${layout.cols}, 1fr)` }}>
+              {shots.map((src, i) => (<div key={i} className="rounded-xl overflow-hidden" style={{ width: layout.cols === 1 ? 240 : 160, height: layout.rows === 1 ? 200 : 140 }}>
+                  <img src={src} className="w-full h-full object-cover" alt={`Photo ${i + 1}`} style={{ transform: "scaleX(-1)" }}/>
+                </div>))}
+            </div>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-center gap-4">
+          <button onClick={onRetake} className="px-8 py-3 rounded-full border-2 border-[#1D6098] text-[#1D6098] font-bold hover:bg-[#1D6098]/10 transition-all flex items-center gap-2">
+            ↻ Retake
+          </button>
+          <button onClick={onConfirm} className="px-12 py-4 rounded-full text-white font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all duration-200" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)" }}>
+            Use Photo →
+          </button>
+        </div>
+      </div>
+    </MachineShell>);
+}
+// ─── SCREEN 6: Background ────────────────────────────────────────────────────
+function BackgroundScreen({ shots, layout, selectedBg, onSelectBg, onConfirm, onBack, }) {
+    const [removing, setRemoving] = useState(false);
+    const [removedShots, setRemovedShots] = useState([]);
+    const [backgroundWasRemoved, setBackgroundWasRemoved] = useState(false);
+    const [bgError, setBgError] = useState(null);
+    const currentBg = BG_OPTIONS.find((b) => b.id === selectedBg) ?? BG_OPTIONS[0];
+    useEffect(() => {
+        // Try remove.bg API; fall back gracefully
+        const apiKey = import.meta.env.VITE_REMOVEBG_API_KEY;
+        if (!apiKey) {
+            setRemovedShots(shots);
+            setBackgroundWasRemoved(false);
+            return;
+        }
+        setRemoving(true);
+        Promise.all(shots.map(async (dataUrl) => {
+            try {
+                const blob = await (await fetch(dataUrl)).blob();
+                const form = new FormData();
+                form.append("image_file", blob, "photo.jpg");
+                form.append("size", "auto");
+                const res = await fetch("https://api.remove.bg/v1.0/removebg", {
+                    method: "POST",
+                    headers: { "X-Api-Key": apiKey },
+                    body: form,
+                });
+                if (!res.ok)
+                    throw new Error("remove.bg failed");
+                const resultBlob = await res.blob();
+                return URL.createObjectURL(resultBlob);
+            }
+            catch {
+                return dataUrl;
+            }
+        }))
+            .then((results) => {
+            setRemovedShots(results);
+            setBackgroundWasRemoved(true);
+        })
+            .catch(() => { setBgError("Background removal failed — using original."); setRemovedShots(shots); setBackgroundWasRemoved(false); })
+            .finally(() => setRemoving(false));
+    }, [shots]);
+    const displayShots = removedShots.length ? removedShots : shots;
+    return (<MachineShell>
+      <div className="flex flex-col h-full min-h-[680px] px-6 py-6 gap-4" style={{ animation: "fade-in 0.4s ease-out" }}>
+        <div className="flex items-center justify-between">
+          <button onClick={onBack} className="px-5 py-2 rounded-full border-2 border-[#1D6098] text-[#1D6098] font-bold text-sm hover:bg-[#1D6098]/10 transition-all">
+            ← Back
+          </button>
+          <GradientText size="text-2xl">Choose Background</GradientText>
+          <div />
+        </div>
+
+        <div className="flex-1 flex gap-5 min-h-0">
+          {/* Preview */}
+          <div className="flex-1 rounded-3xl overflow-hidden shadow-xl border-4 border-white relative">
+            {removing ? (<div className="absolute inset-0 flex flex-col items-center justify-center gap-3" style={{ background: "linear-gradient(160deg, #CCE6FC 0%, #f0f8ff 100%)" }}>
+                <div className="w-12 h-12 rounded-full border-4 border-[#30A0FE] border-t-transparent" style={{ animation: "spin-slow 0.8s linear infinite" }}/>
+                <p className="text-[#1D6098] font-bold">Removing background…</p>
+              </div>) : (<div className="w-full h-full flex items-center justify-center p-4 transition-all duration-500" style={currentBg.style}>
+                <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white" style={{ background: "#fff", padding: 6 }}>
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${layout.cols}, 1fr)` }}>
+                    {displayShots.slice(0, layout.cols * layout.rows).map((src, i) => (<div key={i} className="rounded-lg overflow-hidden relative" style={{
+                    width: layout.cols === 1 ? 180 : 120,
+                    height: layout.rows === 1 ? 160 : 110,
+                    ...currentBg.style,
+                }}>
+                        <img src={src} className="w-full h-full object-cover" alt={`Photo ${i + 1}`} style={{ transform: "scaleX(-1)", mixBlendMode: backgroundWasRemoved ? "multiply" : "normal" }}/>
+                      </div>))}
+                  </div>
+                </div>
+              </div>)}
+          </div>
+
+          {/* BG swatches */}
+          <div className="flex flex-col gap-3 w-36 justify-center">
+            <p className="text-xs font-bold text-black/40 uppercase tracking-wider text-center">Backgrounds</p>
+            {BG_OPTIONS.map((bg) => (<button key={bg.id} onClick={() => onSelectBg(bg.id)} className={`w-full h-16 rounded-2xl border-4 transition-all duration-200 hover:scale-105 active:scale-95 ${selectedBg === bg.id ? "border-[#30A0FE] shadow-[0_0_0_2px_#30A0FE]" : "border-black/10"}`} style={bg.style} title={bg.label}>
+                {selectedBg === bg.id && (<div className="w-full h-full flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-xs text-white font-black" style={{ background: "#30A0FE" }}>✓</div>
+                  </div>)}
+              </button>))}
+          </div>
+        </div>
+
+        {bgError && <p className="text-xs text-orange-500 text-center font-medium">{bgError}</p>}
+
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-bold text-[#1D6098]/60">{currentBg.label}</span>
+          <button onClick={onConfirm} className="px-10 py-4 rounded-full text-white font-black text-lg shadow-xl hover:scale-105 active:scale-95 transition-all duration-200" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)" }}>
+            Print! 🖨️
+          </button>
+        </div>
+      </div>
+    </MachineShell>);
+}
+// ─── SCREEN 7: Printing ────────────────────────────────────────────────────────
+function PrintingScreen({ shots, layout, selectedBg, onDone, }) {
+    const [progress, setProgress] = useState(0);
+    const [done, setDone] = useState(false);
+    const currentBg = BG_OPTIONS.find((b) => b.id === selectedBg) ?? BG_OPTIONS[0];
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setProgress((p) => {
+                if (p >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => setDone(true), 600);
+                    return 100;
+                }
+                return p + 2;
+            });
+        }, 60);
+        return () => clearInterval(interval);
+    }, []);
+    return (<MachineShell printerActive={!done}>
+      <div className="flex flex-col items-center justify-center h-full min-h-[680px] px-8 py-10 gap-6" style={{ animation: "fade-in 0.4s ease-out" }}>
+        {!done ? (<>
+            <GradientText size="text-4xl">Printing…</GradientText>
+            <p className="text-[#1D6098] font-semibold">Please wait while your photo strip is printed.</p>
+
+            {/* Animated strip emerging */}
+            <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white" style={{
+                background: "#fff",
+                padding: 8,
+                animation: "strip-emerge 3s ease-out forwards",
+                animationDelay: "0.5s",
+                opacity: 0,
+                animationFillMode: "forwards",
+            }}>
+              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${layout.cols}, 1fr)` }}>
+                {shots.slice(0, layout.cols * layout.rows).map((src, i) => (<div key={i} className="rounded-xl overflow-hidden relative" style={{
+                    width: layout.cols === 1 ? 160 : 110,
+                    height: layout.rows === 1 ? 140 : 100,
+                    ...currentBg.style,
+                }}>
+                    <img src={src} className="w-full h-full object-cover" alt={`Photo ${i + 1}`} style={{ transform: "scaleX(-1)" }}/>
+                  </div>))}
+              </div>
+              {/* Film strip label */}
+              <div className="mt-2 text-center py-1 rounded-lg" style={{ background: "rgba(204,230,252,0.5)" }}>
+                <GradientText size="text-xs">mari-photo ⊹ ˖</GradientText>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full max-w-sm">
+              <div className="w-full h-3 rounded-full bg-black/10 overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-150" style={{
+                width: `${progress}%`,
+                backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)",
+            }}/>
+              </div>
+              <p className="text-center text-sm text-[#1D6098]/60 font-bold mt-1">{progress}%</p>
+            </div>
+
+            {/* Printer lines animation */}
+            <div className="text-4xl" style={{ animation: "float-gentle 1.5s ease-in-out infinite" }}>
+              🖨️
+            </div>
+          </>) : (<ThankYouContent onHome={onDone}/>)}
+      </div>
+    </MachineShell>);
+}
+function ThankYouContent({ onHome }) {
+    return (<div className="flex flex-col items-center gap-6 text-center" style={{ animation: "scale-in 0.5s ease-out" }}>
+      <div className="text-7xl" style={{ animation: "float-gentle 3s ease-in-out infinite" }}>🎉</div>
+      <div>
+        <GradientText size="text-5xl">Thank You!</GradientText>
+        <div className="mt-2 text-2xl font-black bg-clip-text text-transparent" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)" }}>
+          for using mari-photo ⊹ ࣪ ˖
+        </div>
+      </div>
+      <p className="text-[#1D6098] font-semibold text-lg max-w-sm">
+        We hope you enjoyed your visit! Your photo strip is ready — enjoy! 📸
+      </p>
+      <div className="rounded-3xl px-8 py-4 border-2 border-[#CCE6FC] text-center" style={{ background: "rgba(204,230,252,0.4)" }}>
+        <p className="text-base text-[#1D6098] font-medium" style={{ fontFamily: "'Hi Melody', cursive" }}>
+          come back soon! ⊹ ˖ ✦
+        </p>
+      </div>
+      <button onClick={onHome} className="px-12 py-4 rounded-full text-white font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all duration-200" style={{ backgroundImage: "radial-gradient(ellipse at center, #30A0FE 0%, #1D6098 100%)" }}>
+        ← Return Home
+      </button>
+    </div>);
+}
+// ─── App Root ─────────────────────────────────────────────────────────────────
+export function Photobooth() {
+    const [screen, setScreen] = useState("welcome");
+    const [selectedLayout, setSelectedLayout] = useState("2x2");
+    const [shots, setShots] = useState([]);
+    const [selectedBg, setSelectedBg] = useState("lightblue");
+    const layout = LAYOUTS.find((l) => l.id === selectedLayout) ?? LAYOUTS[0];
+    const go = (s) => setScreen(s);
+    if (screen === "welcome")
+        return <WelcomeScreen onStart={() => go("payment")}/>;
+    if (screen === "payment")
+        return <PaymentScreen onPaid={() => go("layout")}/>;
+    if (screen === "layout")
+        return (<LayoutScreen selected={selectedLayout} onSelect={setSelectedLayout} onContinue={() => go("camera")} onBack={() => go("payment")}/>);
+    if (screen === "camera")
+        return (<CameraScreen layout={layout} onCapture={(s) => { setShots(s); go("confirm"); }} onBack={() => go("layout")}/>);
+    if (screen === "confirm")
+        return (<ConfirmScreen shots={shots} layout={layout} onConfirm={() => go("background")} onRetake={() => go("camera")} onBack={() => go("camera")}/>);
+    if (screen === "background")
+        return (<BackgroundScreen shots={shots} layout={layout} selectedBg={selectedBg} onSelectBg={setSelectedBg} onConfirm={() => go("printing")} onBack={() => go("confirm")}/>);
+    if (screen === "printing")
+        return (<PrintingScreen shots={shots} layout={layout} selectedBg={selectedBg} onDone={() => { setShots([]); setSelectedLayout("2x2"); setSelectedBg("lightblue"); go("welcome"); }}/>);
+    return null;
+}
+export default function App() {
+    return <Photobooth />;
 }

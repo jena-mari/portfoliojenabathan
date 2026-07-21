@@ -1,74 +1,124 @@
-import { useEffect, useRef, useState } from "react"
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion"
+import { memo, useEffect, useMemo, useRef, useState } from "react"
 import Reveal from "./Reveal"
 import Postcard from "./Postcard"
 import { projects } from "../data/projects"
 import { trinkets } from "../data/trinkets"
 
-const ROW_HEIGHT = 720
+const ROW_HEIGHT = 500
 const rotationPattern = [-4, 3, 2.5, -3, -2.5, 2, -3.5, 2.5]
 
 function getLayout(i) {
   const col = i % 2
   const row = Math.floor(i / 2)
-  const top = row * ROW_HEIGHT + (col === 1 ? 56 : 0)
-  const left = col === 0 ? `${(row % 2) * 2}%` : `${55 + (row % 2) * 1.25}%`
+  const top = row * ROW_HEIGHT + (col === 1 ? 42 : 0)
+  const left = col === 0 ? `${2 + (row % 2) * 1.75}%` : `${53 + (row % 2) * 1.25}%`
   const rot = rotationPattern[i % rotationPattern.length]
   return { top: `${top}px`, left, rot }
 }
 
-function ProjectTrinket({ trinket, scattered }) {
-  const positionStyle = scattered
+const ProjectTrinket = memo(function ProjectTrinket({ trinket, scattered }) {
+  const trinketRef = useRef(null)
+  const dragRef = useRef({ active: false, moved: false, startX: 0, startY: 0, baseX: 0, baseY: 0 })
+  const [open, setOpen] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  const style = scattered
     ? {
         top: trinket.top,
         left: trinket.left,
         width: trinket.width,
+        "--trinket-rot": `${trinket.rot}deg`,
+        zIndex: dragging ? 35 : undefined,
       }
-    : { width: trinket.width }
+    : { width: trinket.width, "--trinket-rot": `${trinket.rot}deg`, zIndex: dragging ? 35 : undefined }
+
+  const onPointerDown = (e) => {
+    if (!scattered || e.pointerType === "touch") return
+    dragRef.current = {
+      active: true,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: dragRef.current.baseX,
+      baseY: dragRef.current.baseY,
+    }
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDragging(true)
+  }
+
+  const onPointerMove = (e) => {
+    if (!dragRef.current.active) return
+    const dx = e.clientX - dragRef.current.startX
+    const dy = e.clientY - dragRef.current.startY
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragRef.current.moved = true
+    if (!dragRef.current.moved) return
+
+    const nextX = dragRef.current.baseX + dx
+    const nextY = dragRef.current.baseY + dy
+    const el = trinketRef.current
+    if (!el) return
+    el.style.setProperty("--trinket-x", `${nextX}px`)
+    el.style.setProperty("--trinket-y", `${nextY}px`)
+  }
+
+  const onPointerUp = (e) => {
+    if (!dragRef.current.active) return
+    if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    }
+    if (dragRef.current.moved) {
+      dragRef.current.baseX += e.clientX - dragRef.current.startX
+      dragRef.current.baseY += e.clientY - dragRef.current.startY
+    }
+    dragRef.current.active = false
+    setDragging(false)
+  }
+
+  const onClick = () => {
+    if (dragRef.current.moved) {
+      dragRef.current.moved = false
+      return
+    }
+    setOpen(true)
+  }
 
   return (
-    <motion.div
-      drag={scattered}
-      dragMomentum={false}
-      initial={{ opacity: 0, rotate: trinket.rot - 4, scale: 0.95 }}
-      whileInView={{ opacity: 1, rotate: trinket.rot, scale: 1 }}
-      whileHover={{ rotate: trinket.rot * 0.45, scale: 1.04, zIndex: 30 }}
-      whileTap={{ scale: 1.02, zIndex: 30 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ type: "spring", stiffness: 180, damping: 18 }}
-      style={positionStyle}
-      className={`group ${scattered ? "absolute z-[2] cursor-grab active:cursor-grabbing" : "relative"} touch-none select-none`}
-      aria-label={trinket.alt}
+    <button
+      ref={trinketRef}
+      type="button"
+      style={style}
+      onClick={onClick}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onPointerLeave={() => setOpen(false)}
+      onBlur={() => setOpen(false)}
+      className={`trinket-item group select-none text-left ${dragging ? "is-dragging" : ""} ${scattered ? "absolute z-[2] cursor-grab active:cursor-grabbing" : "relative"}`}
+      aria-label={`Show note for ${trinket.alt}`}
+      aria-expanded={open}
     >
-      <div className="trinket-bubble absolute bottom-[calc(100%+0.875rem)] left-1/2 z-30 w-[min(22rem,78vw)] -translate-x-1/2 rounded-md bg-paper px-4 py-3 font-mono text-[0.75rem] leading-relaxed text-ink opacity-0 transition duration-200 group-hover:opacity-100">
+      <div
+        className={`trinket-bubble absolute bottom-[calc(100%+0.875rem)] left-1/2 z-30 w-[min(22rem,78vw)] -translate-x-1/2 rounded-md bg-paper px-4 py-3 font-mono text-[0.75rem] leading-relaxed text-ink transition duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
+      >
         {trinket.note}
       </div>
       <img
         src={trinket.src}
         alt={trinket.alt}
         draggable={false}
-        className="trinket-cutout block w-full max-h-[30rem] object-contain"
+        loading="lazy"
+        decoding="async"
+        className="trinket-cutout block w-full object-contain"
       />
-    </motion.div>
+    </button>
   )
-}
-
-function useScrollEmphasis() {
-  const ref = useRef(null)
-  const reduceMotion = useReducedMotion()
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  })
-  const opacity = useTransform(scrollYProgress, [0, 0.18, 0.82, 1], reduceMotion ? [1, 1, 1, 1] : [0.82, 1, 1, 0.88])
-  const scale = useTransform(scrollYProgress, [0, 0.18, 0.82, 1], reduceMotion ? [1, 1, 1, 1] : [0.985, 1, 1, 0.99])
-
-  return { ref, opacity, scale }
-}
+})
 
 export default function Projects() {
   const [scattered, setScattered] = useState(false)
-  const { ref, opacity, scale } = useScrollEmphasis()
+  const layouts = useMemo(() => projects.map((_, i) => getLayout(i)), [])
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 47.5rem)")
@@ -81,8 +131,8 @@ export default function Projects() {
   const rows = Math.ceil(projects.length / 2)
 
   return (
-    <section id="projects" ref={ref} className="py-28 bg-green text-paper">
-      <motion.div style={{ opacity, scale }} className="max-w-[73.75rem] mx-auto px-8">
+    <section id="projects" className="py-28 bg-green text-paper">
+      <div className="max-w-[76rem] mx-auto px-8">
         <Reveal className="max-w-xl mb-14" direction="left">
           <span className="kicker-dash font-mono text-xs text-twine flex items-center gap-2.5 mb-3.5">
             projects &amp; works
@@ -99,24 +149,24 @@ export default function Projects() {
           ↳ click a card to flip it · drag it anywhere on desktop
         </p>
 
-        <div
-          className={scattered ? "relative isolate" : "grid grid-cols-1 gap-20"}
-          style={scattered ? { minHeight: `${rows * ROW_HEIGHT + 560}px` } : undefined}
-        >
-          {scattered && trinkets.map((trinket) => <ProjectTrinket key={trinket.id} trinket={trinket} scattered />)}
-          {projects.map((project, i) => (
-            <Postcard key={project.title} project={project} layout={getLayout(i)} scattered={scattered} />
-          ))}
-        </div>
-
         {!scattered && (
-          <div className="mt-14 flex flex-wrap items-end justify-center gap-8">
+          <div className="mb-10 flex flex-wrap items-end justify-center gap-x-8 gap-y-6 opacity-70">
             {trinkets.map((trinket) => (
               <ProjectTrinket key={trinket.id} trinket={trinket} scattered={false} />
             ))}
           </div>
         )}
-      </motion.div>
+
+        <div
+          className={scattered ? "relative isolate" : "grid grid-cols-1 gap-20"}
+          style={scattered ? { minHeight: `${rows * ROW_HEIGHT + 72}px` } : undefined}
+        >
+          {scattered && trinkets.map((trinket) => <ProjectTrinket key={trinket.id} trinket={trinket} scattered />)}
+          {projects.map((project, i) => (
+            <Postcard key={project.title} project={project} layout={layouts[i]} scattered={scattered} />
+          ))}
+        </div>
+      </div>
     </section>
   )
 }

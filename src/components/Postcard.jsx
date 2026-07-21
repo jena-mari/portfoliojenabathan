@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react"
-import { motion } from "framer-motion"
+import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { motion, useMotionValue } from "framer-motion"
 
-export default function Postcard({ project, layout, scattered }) {
+function Postcard({ project, layout, scattered }) {
   const cardRef = useRef(null)
   const dragState = useRef({ dragging: false, moved: false, startX: 0, startY: 0, origX: 0, origY: 0 })
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
   const [flipped, setFlipped] = useState(false)
   const [visible, setVisible] = useState(false)
-  const [cardOffset, setCardOffset] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
 
   // fade in when scrolled into view (opacity only — a transform here would
@@ -27,34 +28,32 @@ export default function Postcard({ project, layout, scattered }) {
     return () => io.disconnect()
   }, [])
 
-  const onPointerDown = (e) => {
+  const onPointerDown = useCallback((e) => {
     if (!scattered) return
     dragState.current = {
       dragging: true,
       moved: false,
       startX: e.clientX,
       startY: e.clientY,
-      origX: cardOffset.x,
-      origY: cardOffset.y,
+      origX: x.get(),
+      origY: y.get(),
     }
     e.currentTarget.setPointerCapture(e.pointerId)
     setDragging(true)
-  }
+  }, [scattered, x, y])
 
-  const onPointerMove = (e) => {
+  const onPointerMove = useCallback((e) => {
     if (!dragState.current.dragging || !scattered) return
     const dx = e.clientX - dragState.current.startX
     const dy = e.clientY - dragState.current.startY
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragState.current.moved = true
     if (!dragState.current.moved) return
 
-    setCardOffset({
-      x: dragState.current.origX + dx,
-      y: dragState.current.origY + dy,
-    })
-  }
+    x.set(dragState.current.origX + dx)
+    y.set(dragState.current.origY + dy)
+  }, [scattered, x, y])
 
-  const onPointerUp = (e) => {
+  const onPointerUp = useCallback((e) => {
     if (!dragState.current.dragging) return
     const shouldFlip = !dragState.current.moved
     dragState.current.dragging = false
@@ -63,21 +62,23 @@ export default function Postcard({ project, layout, scattered }) {
       e.currentTarget.releasePointerCapture(e.pointerId)
     }
     if (shouldFlip) setFlipped((f) => !f)
-  }
+  }, [])
 
   const style = scattered
     ? {
         position: "absolute",
         top: layout.top,
         left: layout.left,
-        transform: `translate(${cardOffset.x}px, ${cardOffset.y}px) rotate(${layout.rot}deg)`,
+        x,
+        y,
+        rotate: layout.rot,
         cursor: dragging ? "grabbing" : "grab",
         zIndex: dragging ? 50 : 10,
       }
     : { position: "relative" }
 
   return (
-    <div
+    <motion.div
       ref={cardRef}
       onClick={() => !scattered && setFlipped((f) => !f)}
       onPointerDown={onPointerDown}
@@ -85,7 +86,7 @@ export default function Postcard({ project, layout, scattered }) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       style={style}
-      className={`pc-scene w-full max-w-[30rem] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
+      className={`pc-scene w-full max-w-[31rem] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
         visible ? "opacity-100 blur-0" : "opacity-0 blur-sm"
       }`}
     >
@@ -101,6 +102,8 @@ export default function Postcard({ project, layout, scattered }) {
               <img
                 src={project.image}
                 alt={`${project.title} screenshot`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -110,11 +113,11 @@ export default function Postcard({ project, layout, scattered }) {
             )}
             <span className="absolute top-2 right-2 w-[1.875rem] h-[1.875rem] rounded-full border-[0.09375rem] border-gold-deep opacity-60 pointer-events-none" />
           </div>
-          <div className="flex justify-between items-baseline mt-3">
-            <h3 className="font-display font-semibold text-xl">{project.title}</h3>
-            <span className="font-mono text-[0.625rem] text-ink-soft">{project.tag}</span>
+          <div className="flex justify-between items-baseline gap-4 mt-3.5">
+            <h3 className="font-display font-semibold text-[1.35rem] leading-none">{project.title}</h3>
+            <span className="font-mono text-[0.6875rem] text-ink-soft text-right">{project.tag}</span>
           </div>
-          <span className="font-mono text-[0.625rem] text-pink-deep mt-1">{project.role}</span>
+          <span className="font-mono text-[0.6875rem] text-pink-deep mt-1.5">{project.role}</span>
         </div>
 
         {/* back */}
@@ -145,6 +148,8 @@ export default function Postcard({ project, layout, scattered }) {
           </div>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   )
 }
+
+export default memo(Postcard)
