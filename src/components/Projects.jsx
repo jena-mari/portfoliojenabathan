@@ -141,7 +141,7 @@ export default function Projects() {
             A selection of things I've built (and helped build).
           </h2>
           <p className="mt-3 text-[#E4E9D3] text-[0.96875rem] max-w-md">
-            These are real postcards. Drag them around, flip them over — the address side has the actual links.
+            These are real postcards. Drag them around, flip them over — the address side has the actual links. You'll see a few trinkets as well... click and drag them around to see the lore 𐔌՞ ܸ.ˬ.ܸ՞𐦯
           </p>
         </Reveal>
 

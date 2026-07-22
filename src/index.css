@@ -377,3 +377,26 @@ body {
   0% { background-position: 0 0; }
   100% { background-position: 0 8px; }
 }
+
+/* ---- mari-photo: real printer output ----
+   #mari-photo-print-sheet is always mounted (hidden) so the on-screen
+   "Printing…" moment can trigger an actual browser print job against it.
+   Everything else is hidden for the duration of that print. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #mari-photo-print-sheet,
+  #mari-photo-print-sheet * {
+    visibility: visible;
+  }
+  #mari-photo-print-sheet {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+  }
+  @page {
+    margin: 8mm;
+  }
+}

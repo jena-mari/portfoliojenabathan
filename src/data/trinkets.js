@@ -42,11 +42,21 @@ export const trinkets = [
   {
     id: "nommi",
     src: "/items/nommi.png",
-    alt: "Nommi",
+    alt: "nommi",
     note: "nommi dolls... i have so much of them! they're such adorable babies, and i'm a little biased towards them as well because they look like my baby niece :3",
     rot: -9,
     top: "181rem",
     left: "96%",
+    width: "min(14rem, 42vw)",
+  },
+  {
+    id: "chappell roan vinyl",
+    src: "/items/chappell.png",
+    alt: "chappell roan vinyl",
+    note: "when i got my hands on this specific vinyl, i was SO stoked. i have way too many vinyls, but this is the one that's on a constant loop for me.",
+    rot: -9,
+    top: "140rem",
+    left: "50%",
     width: "min(14rem, 42vw)",
   },
 ]
