@@ -216,7 +216,7 @@ function PrintSheet({ shot, layout, bgStyle }) {
             style={{ gridTemplateColumns: `repeat(${section.cols}, ${section.w})`, border: "1px dashed rgba(52,48,42,0.35)" }}
           >
             {Array.from({ length: section.copies }).map((_, i) => (
-              <div key={i} className="overflow-hidden" style={{ width: section.w, height: section.h, outline: "1px dashed rgba(52,48,42,0.25)", outlineOffset: "-1px", ...(bgStyle ?? {}) }}>
+              <div key={i} className="overflow-hidden" style={{ width: section.w, height: section.h, outline: "1px dashed rgba(52,48,42,0.25)", outlineOffset: "-1px", ...bgStyle }}>
                 {shot && <img src={shot} className="w-full h-full object-cover" alt="" style={{ transform: "scaleX(-1)" }} />}
               </div>
             ))}

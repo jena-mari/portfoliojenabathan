@@ -6,7 +6,7 @@ export const projects = [
     image: "/items/synapta.png",
     message:
       "Synapta's production website, built from the ground up during my software development internship. I led the frontend, set up the company's branding and design system, and shipped a responsive site the company actually uses — it also earned me a Letter of Commendation from the team.",
-    links: [{ label: "prototype", href: "https://www.synapta.com.au/" }],
+    links: [{ label: "live site", href: "https://www.synapta.com.au/" }],
   },
   {
     title: "Shortlist",

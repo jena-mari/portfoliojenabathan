@@ -10,6 +10,8 @@ function Postcard({ project, layout, scattered }) {
   const [visible, setVisible] = useState(false)
   const [dragging, setDragging] = useState(false)
 
+  const isLinkTarget = (target) => target instanceof Element && Boolean(target.closest("a"))
+
   // fade in when scrolled into view (opacity only — a transform here would
   // create a new containing block and break the absolute drag positioning)
   useEffect(() => {
@@ -29,6 +31,7 @@ function Postcard({ project, layout, scattered }) {
   }, [])
 
   const onPointerDown = useCallback((e) => {
+    if (isLinkTarget(e.target)) return
     if (!scattered) return
     dragState.current = {
       dragging: true,
@@ -54,6 +57,7 @@ function Postcard({ project, layout, scattered }) {
   }, [scattered, x, y])
 
   const onPointerUp = useCallback((e) => {
+    if (isLinkTarget(e.target)) return
     if (!dragState.current.dragging) return
     const shouldFlip = !dragState.current.moved
     dragState.current.dragging = false
@@ -80,7 +84,10 @@ function Postcard({ project, layout, scattered }) {
   return (
     <motion.div
       ref={cardRef}
-      onClick={() => !scattered && setFlipped((f) => !f)}
+      onClick={(e) => {
+        if (isLinkTarget(e.target)) return
+        if (!scattered) setFlipped((f) => !f)
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -137,6 +144,8 @@ function Postcard({ project, layout, scattered }) {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onPointerUp={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                     className="font-mono text-[0.625rem] border border-ink rounded-full px-2.5 py-1.5 inline-flex items-center gap-1.5 self-start transition-colors duration-200 hover:bg-ink hover:text-cream-card"
                   >
