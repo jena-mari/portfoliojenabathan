@@ -30,7 +30,7 @@ export default function Contact() {
         <Reveal className="mb-14" direction="right">
           <span className="kicker-dash font-mono text-xs text-pink-deep flex items-center gap-2.5 mb-3.5">say hello</span>
           <h2 className="font-display font-semibold text-[clamp(1.9rem,4vw,2.9rem)]">
-            Wish you were here — let's talk.
+            I'd love to get in contact with you.
           </h2>
         </Reveal>
 
@@ -38,8 +38,7 @@ export default function Contact() {
           <div className="bg-cream-card shadow-postal rounded-md overflow-hidden grid grid-cols-1 md:grid-cols-[1.3fr_1fr]">
             <div className="ruled-lines-lg p-10 md:p-12">
               <p className="font-display italic text-lg leading-[2.125rem] text-ink-soft max-w-md">
-                Got a project, an opportunity, or just want to talk shop about design and code? I'm always up for a
-                good conversation — drop a line and I'll write back.
+                Got a project, opportunity, or just think I’m someone you’d mesh with well? My DMs are always open for people who have something to talk about. ⡞⠳⣄⣀⣠⠞⢷ ֹ۪
               </p>
               <p className="font-display italic text-lg text-ink mt-2">— jena</p>
             </div>
