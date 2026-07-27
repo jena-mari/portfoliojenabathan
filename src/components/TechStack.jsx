@@ -54,7 +54,12 @@ function Card({ cat }) {
 
 export default function TechStack() {
   return (
-    <section id="stack" className="relative min-h-screen py-28 overflow-hidden bg-tech-sky">
+    <section
+      id="stack"
+      data-scroll-section
+      data-section-color="#CCE6FC"
+      className="relative min-h-screen py-28 overflow-hidden"
+    >
       <Clouds />
 
       <div className="max-w-[73.75rem] mx-auto px-8 relative z-10">

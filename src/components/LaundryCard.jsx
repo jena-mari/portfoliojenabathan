@@ -32,7 +32,6 @@ export default function LaundryCard({
     rotate.set(baseRotate)
     idleControls.current = startIdle()
     return () => idleControls.current?.stop()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onPointerDown = (e) => {

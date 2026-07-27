@@ -3,20 +3,16 @@ import { motion, motionValue, animate, useMotionTemplate } from "framer-motion"
 import Reveal from "./Reveal"
 import LaundryCard from "./LaundryCard"
 
-const BASE_Y = 11.2 // resting rope height inside its own SVG (px)
-const IDLE_SAG = 7.2 // resting droop at each pin, before any interaction
-const IDLE_RANGE = 2.4 // how far the idle sway moves the droop up/down
-const PULL_DOWN = 0.55 // how much dragging down stretches the rope
-const PULL_SIDE = 0.12 // how much dragging sideways also adds tension
+const BASE_Y = 11.2
+const IDLE_SAG = 7.2
+const IDLE_RANGE = 2.4
+const PULL_DOWN = 0.55
+const PULL_SIDE = 0.12
 
-const ROPE_AREA = 32 // height reserved above the card grid for the rope (px) — matches the bleed SVG's own height, and is where cards start in normal flow
-const CLIP_TOP = 4.8 // where the clip's top edge sits, in row-relative px — just above the rope baseline so the rope reads as threaded through the pin
-const CLIP_LIFT = ROPE_AREA - CLIP_TOP // how far above each card's own top the clip needs to sit, in local (per-card) coordinates
+const ROPE_AREA = 32
+const CLIP_TOP = 4.8
+const CLIP_LIFT = ROPE_AREA - CLIP_TOP
 
-// A full-bleed, physically-reactive clothesline: the rope, the clips, and
-// the cards are all coupled through the same set of motion values. Drag a
-// card and its pin drags the rope down with it (and the neighbouring slack
-// redistributes); let go and both spring back together.
 export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex = 0 }) {
   const bleedRef = useRef(null)
   const clipRefs = useRef([])
@@ -26,9 +22,6 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
   const reduceMotion =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-  // one sag value per pin (absolute droop, used to draw the rope) — and one
-  // derived "dip" value per pin (droop relative to rest, used to nudge the
-  // clip + card down so they visibly stay attached to the moving rope)
   const sags = useMemo(() => cards.map(() => motionValue(IDLE_SAG)), [cards])
   const dips = useMemo(() => cards.map(() => motionValue(0)), [cards])
   const idleControls = useRef([])
@@ -52,12 +45,8 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
   useEffect(() => {
     idleControls.current = sags.map((_, i) => startIdleSag(i))
     return () => idleControls.current.forEach((c) => c?.stop())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sags])
 
-  // measure real pixel positions of each clip relative to the full-bleed
-  // rope wrapper, so the dip in the rope lines up exactly under the pin
-  // regardless of viewport width or where the centered content sits
   useEffect(() => {
     function measure() {
       if (!bleedRef.current) return
@@ -90,10 +79,6 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
 
   return (
     <div className="relative" style={{ paddingTop: ROPE_AREA }}>
-      {/* full-bleed rope — breaks out of the centered container to span edge to edge.
-          Positioned absolute + top:0, so it ignores this row's paddingTop entirely
-          and stays pinned exactly at the row's true top, in the same coordinate
-          space the CLIP_TOP / BASE_Y constants above assume. */}
       <div
         ref={bleedRef}
         className="absolute top-0 left-1/2 w-screen -translate-x-1/2 h-10 pointer-events-none select-none"
@@ -124,10 +109,6 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
       <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-14">
         {cards.map((cat, i) => (
           <Reveal key={cat.title} delay={i * 0.07} className="relative">
-            {/* clip — top edge lands exactly on the rope baseline (CLIP_LIFT px
-                above this card's own top, since cards start at ROPE_AREA in row
-                coordinates and the rope sits at CLIP_TOP) — moves with the same
-                dip value as the rope, so it visibly stays pinched to it */}
             <motion.div
               style={{ y: dips[i], top: -CLIP_LIFT }}
               className="absolute inset-x-0 flex justify-center z-20 pointer-events-none"
@@ -137,12 +118,13 @@ export default function ClotheslineRow({ cards, restAngles, renderCard, rowIndex
                 src="/items/clip.png"
                 alt=""
                 aria-hidden="true"
+                loading="lazy"
+                decoding="async"
                 style={{ width: 25.6, height: "auto" }}
                 className="drop-shadow-[0_0.25rem_0.375rem_rgba(0,0,0,0.25)] select-none"
               />
             </motion.div>
 
-            {/* card hangs from the same dip value, so it visibly stays pinned to the clip */}
             <motion.div style={{ y: dips[i] }}>
               <LaundryCard
                 baseRotate={restAngles[i]}

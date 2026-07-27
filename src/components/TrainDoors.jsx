@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 
-// A quick "doors sliding open" intro on first load, echoing the train motif.
 export default function TrainDoors() {
   const [open, setOpen] = useState(false)
   const [done, setDone] = useState(false)

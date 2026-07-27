@@ -27,8 +27,6 @@ const variants = {
   },
 }
 
-// Scroll-triggered entrance wrapper. `direction` picks the motion style,
-// `delay`/`duration` let sibling items stagger.
 export default function Reveal({
   children,
   className = "",

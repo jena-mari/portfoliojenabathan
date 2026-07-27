@@ -12,8 +12,6 @@ function Postcard({ project, layout, scattered }) {
 
   const isLinkTarget = (target) => target instanceof Element && Boolean(target.closest("a"))
 
-  // fade in when scrolled into view (opacity only — a transform here would
-  // create a new containing block and break the absolute drag positioning)
   useEffect(() => {
     const el = cardRef.current
     if (!el) return
@@ -93,7 +91,7 @@ function Postcard({ project, layout, scattered }) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       style={style}
-      className={`pc-scene w-full max-w-[31rem] aspect-[3/2] mx-auto select-none transition-[opacity,filter] duration-700 ease-out ${
+      className={`pc-scene mx-auto aspect-[7/5] w-full max-w-[35rem] select-none transition-[opacity,filter] duration-700 ease-out ${
         visible ? "opacity-100 blur-0" : "opacity-0 blur-sm"
       }`}
     >
@@ -102,7 +100,6 @@ function Postcard({ project, layout, scattered }) {
         animate={{ rotateY: flipped ? 180 : 0 }}
         transition={{ type: "spring", stiffness: 240, damping: 24 }}
       >
-        {/* front */}
         <div className="pc-face bg-cream-card rounded-sm shadow-postal-lg p-6 flex flex-col text-ink">
           <div className="relative flex-1 overflow-hidden border-[0.09375rem] border-ink-soft">
             {project.image ? (
@@ -127,10 +124,9 @@ function Postcard({ project, layout, scattered }) {
           <span className="font-mono text-[0.6875rem] text-pink-deep mt-1.5">{project.role}</span>
         </div>
 
-        {/* back */}
         <div className="pc-face pc-face-back contact-back rounded-sm shadow-postal-lg p-6 text-ink">
           <div className="flex h-full gap-0">
-            <div className="flex-[1.6] pr-3.5 ruled-lines font-display italic text-[0.8125rem] leading-[1.375rem] text-ink-soft overflow-hidden">
+            <div className="ruled-lines flex-[1.75] overflow-hidden pr-4 font-sans text-[0.875rem] leading-[1.5rem] text-ink-soft sm:text-[0.9375rem] sm:leading-[1.625rem]">
               {project.message}
             </div>
             <div className="flex-1 pl-3.5 flex flex-col justify-between">

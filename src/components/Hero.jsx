@@ -2,12 +2,16 @@ import Reveal from "./Reveal"
 
 export default function Hero() {
   return (
-    <header id="top" className="relative min-h-screen flex items-center overflow-hidden pt-32 pb-24 bg-ink">
-      {/* ---- moving train footage, cropped lower for a stronger midpoint read ---- */}
+    <header
+      id="top"
+      data-scroll-section
+      data-section-color="#34302A"
+      className="relative min-h-screen flex items-center overflow-hidden pt-32 pb-24"
+    >
       <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
         <video
           className="hero-video absolute inset-0 w-full h-full object-cover object-[50%_68%]"
-          src="/items/hero-background.MOV"
+          src="/items/hero-background.mp4"
           autoPlay
           muted
           loop
@@ -29,6 +33,8 @@ export default function Hero() {
                 <img
                   src="/items/photo-1.png"
                   alt="Jena, portrait"
+                  fetchPriority="high"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </div>
