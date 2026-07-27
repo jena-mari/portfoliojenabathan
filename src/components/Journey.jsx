@@ -1,113 +1,111 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import {
-  motion,
-  useAnimationFrame,
-  useMotionValue,
-  useReducedMotion,
-} from "framer-motion"
+import { useEffect, useRef, useState } from "react"
+import { motion, useMotionValue, useAnimationFrame, useReducedMotion } from "framer-motion"
+import Reveal from "./Reveal"
 
+/**
+ * ── ASSETS ───────────────────────────────────────────────────────────────
+ * folder.png is the shared decorative folder graphic. It's stretched with
+ * object-fit: fill to exactly match each card's box, so cards can grow to
+ * fit their text without ever cropping or leaving gaps in the artwork.
+ * If your folder.png has fine linework that visibly distorts when
+ * stretched, swap `object-fill` for `object-cover` and give FolderCard a
+ * fixed `aspect-[]` matching your source image instead.
+ */
 const FOLDER_BG = "/items/milestones/folder.png"
-const AUTO_SPEED = 30
-const CARD_GAP = 40
 
 const stamps = [
   {
     tag: "UOW · COMPUTER SCIENCE",
     title: "Dean's Scholar",
-    body: "Ranked in the top 5% of the Computer Science and Software Engineering cohort at the University of Wollongong.",
+    body: "Ranked in the top 5% of the Computer Science & Software Engineering cohort at the University of Wollongong, recognised on the Dean's Merit List for sustained academic performance.",
     photo: "/items/milestones/deanslist.png",
     rot: -2.2,
   },
   {
-    tag: "FOUNDER · COMMUNITY",
-    title: "Scaled a 130+ member community",
-    body: "Founded a Filipino student organisation and grew membership from 6 to more than 130—an increase of over 2,000%.",
+    tag: "FOUNDER",
+    title: "Built a community, 130+ strong",
+    body: "Founded a university Filipino organisation and grew membership from 6 to 130+ students, building it into one of the largest cultural societies on campus.",
     photo: "/items/milestones/filo.png",
     rot: 1.8,
   },
   {
     tag: "STARTUP · INTERNSHIP",
-    title: "Led front-end delivery",
-    body: "Owned front-end initiatives at AI education startup Synapta, translating product designs into production-ready user experiences.",
+    title: "Led front-end initiatives",
+    body: "Interned at Synapta, an AI + education startup, owning front-end features end-to-end — from design and architecture through to production release.",
     photo: "/items/milestones/frontend.png",
     rot: 1.3,
   },
   {
-    tag: "HACKATHONS · INNOVATION",
-    title: "Award-winning hackathon builder",
-    body: "Competed in Google Developer Group hackathons and placed 3rd at the 2026 Lyra × OpenAI × January Capital × Relevance AI Hackathon.",
+    tag: "HACKATHONS",
+    title: "Hackathon winner + competitor",
+    body: "Competed across multiple Google Developer Groups (GDG) hackathons and placed 3rd at the Lyra × OpenAI × January Capital × Relevance AI Hackathon 2026.",
     photo: "/items/milestones/hackathon.png",
     rot: -1.6,
   },
   {
-    tag: "UOW · RESEARCH",
-    title: "Engineering & Information Sciences Scholar",
-    body: "Awarded a competitive scholarship for academic excellence and selected for specialised research in computer vision and algorithmic systems.",
+    tag: "UOW · COMPUTER SCIENCE",
+    title: "Engineering & Info Sciences Scholar",
+    body: "Awarded the Engineering and Information Sciences Scholarship for high academic achievement; currently contributing to a research program in computer vision and algorithmic systems.",
     photo: "/items/milestones/aws.png",
-    rot: 1.4,
+    rot: -1.9,
   },
   {
-    tag: "INDUSTRY · SERVICENOW",
-    title: "Her Tech Future selectee",
-    body: "Selected among female students across New South Wales for ServiceNow's hands-on technology and industry development program.",
+    tag: "INDUSTRY · COMPUTER SCIENCE",
+    title: "Her Tech Future with ServiceNow",
+    body: "One of a select group of female students from New South Wales chosen for ServiceNow's Her Tech Future program — a hands-on workshop on enterprise technology.",
     photo: "/items/milestones/servicenow.png",
-    rot: -1.2,
+    rot: 2.1,
   },
   {
-    tag: "MEDIA · LEADERSHIP",
-    title: "Featured by two publications",
-    body: "Profiled by SBS Filipino and The Philippine Times for community leadership and achievements as a young founder in New South Wales.",
+    tag: "ORGANISATION",
+    title: "Two newspaper features",
+    body: "Featured in two publications, SBS Filipino and The Philippine Times, recognised as a multi-awarded young founder in New South Wales.",
     photo: "/items/milestones/hiraya.png",
-    rot: 1.7,
+    rot: -1.3,
   },
 ]
 
+const AUTO_SPEED = 34 // px / second, idle roll speed
+const CARD_GAP = 40 // px, kept in sync with the inline gap style below
+
 function FolderCard({ stamp }) {
   return (
-    <motion.article
-      className="relative aspect-[4/3] w-[min(90vw,23rem)] shrink-0 select-none sm:w-[28rem] lg:w-[33rem]"
+    <motion.div
+      className="relative w-[21rem] sm:w-[27rem] md:w-[32rem] lg:w-[36rem] shrink-0 select-none"
       style={{ rotate: stamp.rot }}
-      whileHover={{
-        rotate: 0,
-        y: -10,
-        scale: 1.015,
-        transition: { type: "spring", stiffness: 260, damping: 20 },
-      }}
+      whileHover={{ rotate: 0, y: -8, transition: { type: "spring", stiffness: 260, damping: 18 } }}
     >
       <img
         src={FOLDER_BG}
         alt=""
-        aria-hidden="true"
         draggable={false}
-        className="pointer-events-none absolute inset-0 h-full w-full object-contain drop-shadow-[0_20px_34px_rgba(18,66,36,0.16)]"
+        className="absolute inset-0 h-full w-full object-fill pointer-events-none drop-shadow-[0_18px_30px_rgba(18,66,36,0.14)]"
       />
 
-      <span className="absolute right-[9%] top-[6.5%] max-w-[48%] text-right font-mono text-[0.5rem] font-semibold leading-tight tracking-[0.08em] text-[#2f6fdb] sm:text-[0.6rem] lg:text-[0.66rem]">
+      <span className="absolute top-[5%] right-[8%] font-mono text-[0.6rem] sm:text-[0.7rem] font-semibold tracking-wide text-[#2f6fdb] max-w-[46%] text-right leading-tight">
         {stamp.tag}
       </span>
 
-      <div className="absolute inset-x-[7.5%] bottom-[9.5%] top-[23.5%] flex gap-[5%]">
-        <div className="w-[37%] shrink-0 -rotate-2 overflow-hidden rounded-[0.65rem] bg-black/5 shadow-[0_7px_18px_rgba(0,0,0,0.18)]">
+      <div className="relative flex flex-col sm:flex-row gap-5 sm:gap-7 pt-[19%] px-[8%] pb-[10%]">
+        <div className="w-full sm:w-[38%] aspect-[4/3] sm:aspect-[3/4] shrink-0 -rotate-2 rounded-lg overflow-hidden bg-black/5 shadow-[0_6px_16px_rgba(0,0,0,0.18)]">
           <img
             src={stamp.photo}
-            alt=""
-            aria-hidden="true"
+            alt={stamp.title}
             draggable={false}
-            loading="lazy"
             className="h-full w-full object-cover"
           />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center py-1">
-          <h3 className="mb-2 font-display text-[clamp(0.95rem,3.7vw,1.7rem)] font-bold uppercase leading-[1.02] text-[#141313] sm:mb-3">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <h3 className="font-display font-bold uppercase leading-[1.08] text-[#141313] text-[clamp(1.15rem,2.6vw,1.75rem)] mb-2.5">
             {stamp.title}
           </h3>
-          <p className="max-w-[29ch] text-[clamp(0.58rem,2.15vw,0.88rem)] leading-[1.55] text-[#3a3733]">
+          <p className="text-[#3a3733] text-[clamp(0.78rem,1.4vw,0.98rem)] leading-relaxed">
             {stamp.body}
           </p>
         </div>
       </div>
-    </motion.article>
+    </motion.div>
   )
 }
 
@@ -116,126 +114,96 @@ export default function Journey() {
   const [paused, setPaused] = useState(false)
   const isDragging = useRef(false)
   const resumeTimer = useRef(null)
+
   const trackRef = useRef(null)
   const trackWidth = useRef(0)
   const baseX = useMotionValue(0)
-  const loop = useMemo(() => [...stamps, ...stamps, ...stamps], [])
-  const deck = reduceMotion ? stamps : loop
+
+  // Triple the deck so the loop can wrap seamlessly in either direction.
+  const loop = [...stamps, ...stamps, ...stamps]
 
   useEffect(() => {
-    const track = trackRef.current
-    if (!track) return undefined
-
     const measure = () => {
-      trackWidth.current = track.scrollWidth / (reduceMotion ? 1 : 3)
+      if (trackRef.current) trackWidth.current = trackRef.current.scrollWidth / 3
     }
-
     measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(track)
-
-    return () => observer.disconnect()
-  }, [reduceMotion])
-
-  useEffect(
-    () => () => {
-      if (resumeTimer.current) clearTimeout(resumeTimer.current)
-    },
-    [],
-  )
+    const ro = new ResizeObserver(measure)
+    if (trackRef.current) ro.observe(trackRef.current)
+    return () => ro.disconnect()
+  }, [])
 
   useAnimationFrame((_, delta) => {
-    const width = trackWidth.current
-    if (!width) return
-
     if (!reduceMotion && !paused && !isDragging.current) {
-      baseX.set(baseX.get() - AUTO_SPEED * Math.min(delta / 1000, 0.05))
+      baseX.set(baseX.get() - AUTO_SPEED * (delta / 1000))
     }
 
-    const currentX = baseX.get()
-    if (currentX <= -width) baseX.set(currentX + width)
-    else if (currentX > 0) baseX.set(currentX - width)
+    const w = trackWidth.current
+    if (w > 0) {
+      let v = baseX.get()
+      if (v <= -w) v += w
+      if (v > 0) v -= w
+      if (v !== baseX.get()) baseX.set(v)
+    }
   })
 
   const handleDragStart = () => {
     isDragging.current = true
-    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    clearTimeout(resumeTimer.current)
   }
 
   const handleDragEnd = () => {
+    // Give momentum a moment to settle before the idle roll takes back over.
     resumeTimer.current = setTimeout(() => {
       isDragging.current = false
-    }, 650)
+    }, 500)
   }
 
   return (
-    <section
-      id="journey"
-      aria-labelledby="journey-title"
-      className="overflow-hidden bg-[#f6cfda] py-16 sm:py-20 lg:py-28"
-    >
-      <motion.header
-        className="mx-auto mb-10 max-w-[73.75rem] px-5 text-center sm:mb-14 sm:px-8 lg:mb-16"
-        initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
-      >
-        <span className="mb-3 block font-mono text-[0.68rem] tracking-[0.24em] text-[#72555e] sm:text-xs">
-          SELECTED MILESTONES
-        </span>
-        <h2
-          id="journey-title"
-          className="font-display text-[clamp(2.2rem,7vw,4.3rem)] font-semibold leading-[1.02] text-[#141313]"
-        >
-          milestones earned
-          <br />
-          along the way
-        </h2>
-        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-[#5f4850] sm:text-base">
-          A growing record of academic excellence, product leadership, and
-          community impact.
-        </p>
-      </motion.header>
+    <section id="journey" className="py-24 sm:py-28 bg-[#f6cfda] overflow-hidden">
+      <div className="max-w-[73.75rem] mx-auto px-6 sm:px-8">
+        <Reveal className="text-center mb-14 sm:mb-16">
+          <span className="font-mono text-xs tracking-widest text-[#8a6b74]/70 block mb-2">
+            stamps
+          </span>
+          <h2 className="font-display font-semibold text-[clamp(2.1rem,6vw,4.2rem)] leading-[1.05] text-[#141313]">
+            milestones earned
+            <br />
+            along the way
+          </h2>
+        </Reveal>
+      </div>
 
-      <div
-        className={`relative py-4 sm:py-6 ${
-          reduceMotion ? "overflow-x-auto" : ""
-        }`}
+      <motion.div
+        className="relative"
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
         style={{
           maskImage:
-            "linear-gradient(to right, transparent 0, black 4%, black 96%, transparent 100%)",
+            "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
           WebkitMaskImage:
-            "linear-gradient(to right, transparent 0, black 4%, black 96%, transparent 100%)",
+            "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
         }}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocusCapture={() => setPaused(true)}
-        onBlurCapture={() => setPaused(false)}
+        onHoverStart={() => setPaused(true)}
+        onHoverEnd={() => setPaused(false)}
       >
         <motion.div
           ref={trackRef}
-          className={`flex w-max items-center px-4 sm:px-8 ${
-            reduceMotion ? "" : "cursor-grab active:cursor-grabbing"
-          }`}
-          style={{ x: reduceMotion ? 0 : baseX, gap: CARD_GAP }}
-          drag={reduceMotion ? false : "x"}
-          dragConstraints={{ left: -100000, right: 100000 }}
-          dragElastic={0.04}
-          dragMomentum
+          className="flex items-center cursor-grab active:cursor-grabbing px-6 sm:px-8"
+          style={{ x: baseX, gap: `${CARD_GAP}px` }}
+          drag="x"
+          dragConstraints={{ left: -Infinity, right: Infinity }}
+          dragElastic={0}
+          dragMomentum={true}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          aria-label="Career and academic milestones. Drag horizontally to explore."
         >
-          {deck.map((stamp, index) => (
-            <FolderCard key={`${stamp.title}-${index}`} stamp={stamp} />
+          {loop.map((s, i) => (
+            <FolderCard key={`${s.title}-${i}`} stamp={s} />
           ))}
         </motion.div>
-      </div>
-
-      <p className="mt-5 text-center font-mono text-[0.62rem] tracking-[0.16em] text-[#72555e] sm:mt-7 sm:text-[0.68rem]">
-        DRAG TO EXPLORE
-      </p>
+      </motion.div>
     </section>
   )
 }
