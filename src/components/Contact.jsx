@@ -5,7 +5,7 @@ import Reveal from "./Reveal"
 const contacts = [
   { label: "email", value: "jenamaribathan@gmail.com", href: "mailto:jenamaribathan@gmail.com", icon: "mail" },
   { label: "linkedin", value: "linkedin.com/in/jenabathan", href: "https://www.linkedin.com/in/jenabathan/", icon: "linkedin" },
-  { label: "github", value: "github.com/jena-mari", href: "https://github.com/jena-mari", icon: "github" },
+  { label: "phone", value: "(0427) 575 787", href: "tel:+61427575787", icon: "phone" },
 ]
 
 function useScrollEmphasis() {
@@ -45,75 +45,88 @@ function ContactIcon({ type }) {
     )
   }
   return (
-    <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.58 2 12.2c0 4.49 2.87 8.3 6.84 9.64.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.61-3.37-1.21-3.37-1.21-.46-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.95.68 1.92 0 1.39-.01 2.51-.01 2.85 0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.2C22 6.58 17.52 2 12 2Z" />
+    <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5.2 3.5 8.6 3l2 5.1-2.1 1.5a15.8 15.8 0 0 0 5.9 5.9l1.5-2.1 5.1 2-.5 3.4c-.2 1.3-1.3 2.2-2.6 2.1C9.9 20.2 3.8 14.1 3.1 6.1 3 4.8 3.9 3.7 5.2 3.5Z" />
     </svg>
   )
 }
 
 export default function Contact() {
   const { ref, opacity, scale } = useScrollEmphasis()
+  const reduceMotion = useReducedMotion()
 
   return (
     <section
       id="contact"
       ref={ref}
       data-scroll-section
-      data-section-color="#EDE0C4"
-      className="flex min-h-[100svh] items-center py-20 sm:py-24 lg:py-28"
+      data-section-color="#F7F2E8"
+      className="flex min-h-[100svh] items-center py-16 sm:py-20 lg:py-24"
     >
-      <motion.div style={{ opacity, scale }} className="mx-auto w-full max-w-[73.75rem] px-5 sm:px-8">
-        <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-16">
-          <Reveal direction="right">
-            <div className="relative max-w-md">
-              <h2 className="font-display font-black text-[clamp(2.75rem,6vw,4rem)] leading-[0.95] text-ink">
-                I'd love
-                <br />
-                to get in
-                <br />
-                contact
-                <br />
-                with you.
-              </h2>
+      <motion.div style={{ opacity, scale }} className="mx-auto w-full max-w-[92rem] px-5 sm:px-8">
+        <div className="rounded-sm bg-[#F7F2E8] px-5 py-14 sm:px-10 sm:py-16 lg:px-20 lg:py-20">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+            <div>
+              <Reveal direction="right">
+                <h2 className="max-w-[10.5em] font-display text-[clamp(2.65rem,10vw,6rem)] font-regular leading-[1.0] tracking-[-0.05em] text-[#942224]">
+                  I'd love to get in
+                  <br />
+                  contact with you.
+                </h2>
 
-              <img
-                src="/jena-logo.png"
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="pointer-events-none absolute top-[2.9em] w-[7.25rem] select-none drop-shadow-[0_6px_10px_rgba(0,0,0,0.12)] sm:left-[9rem] sm:w-[9.5rem]"
-              />
+                <p className="mt-8 max-w-[42rem] font-google text-[0.95rem] font-medium leading-relaxed text-[#942224] sm:text-base">
+                  Got a project, opportunity, or just think I’m someone you’d mesh with well? My DMs are always open
+                  for people who have something to talk about. ⡞⠳⣄⣀⣠⠞⢷ ֹ۪
+                </p>
+              </Reveal>
+
+              <div className="mt-10 flex flex-col gap-4">
+                {contacts.map((c, i) => (
+                  <motion.a
+                    key={c.label}
+                    href={c.href}
+                    target={c.href.startsWith("http") ? "_blank" : undefined}
+                    rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    initial={{ opacity: 0, x: -18 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ delay: i * 0.09, duration: 0.5, ease: "easeOut" }}
+                    whileHover={reduceMotion ? undefined : { x: 8, scale: 1.01 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.985 }}
+                    className="group flex min-w-0 items-center gap-4 rounded-2xl bg-white px-4 py-5 text-[#942224] shadow-[0_5px_0_rgba(72,35,28,0.18),0_12px_28px_rgba(72,35,28,0.08)] transition-shadow hover:shadow-[0_7px_0_rgba(148,34,36,0.22),0_16px_32px_rgba(72,35,28,0.1)] sm:gap-8 sm:px-10 sm:py-6"
+                  >
+                    <span className="shrink-0 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
+                      <ContactIcon type={c.icon} />
+                    </span>
+                    <span className="min-w-0 [overflow-wrap:anywhere] font-google text-sm font-bold min-[380px]:text-base sm:text-xl">
+                      {c.value}
+                    </span>
+                  </motion.a>
+                ))}
+              </div>
             </div>
 
-            <p className="mt-8 max-w-md text-base leading-relaxed text-ink-soft">
-              Got a project, opportunity, or just think I'm someone you'd mesh with well? My DMs are always open for
-              people who have something to talk about. ⡞⠳⣄⣀⣠⠞⢷ ֹ۪
-            </p>
-          </Reveal>
-
-          <Reveal direction="scale" delay={0.1} className="flex flex-col gap-6">
-            {contacts.map((c, i) => (
-              <motion.a
-                key={c.label}
-                href={c.href}
-                target={c.href.startsWith("http") ? "_blank" : undefined}
-                rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5, ease: "easeOut" }}
-                whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 18 } }}
-                className="flex min-w-0 items-center gap-5 rounded-2xl bg-white px-6 py-6 text-ink shadow-[0_10px_24px_rgba(20,19,17,0.08)] sm:gap-6 sm:px-8 sm:py-7"
+            <Reveal direction="scale" delay={0.12} className="flex items-center justify-center">
+              <motion.div
+                animate={
+                  reduceMotion
+                    ? undefined
+                    : { y: [0, -10, 0], rotate: [-0.8, 0.8, -0.8] }
+                }
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                whileHover={reduceMotion ? undefined : { rotate: 2, scale: 1.025 }}
+                className="w-full max-w-[30rem]"
               >
-                <span className="shrink-0">
-                  <ContactIcon type={c.icon} />
-                </span>
-                <span className="min-w-0 [overflow-wrap:anywhere] font-sans text-[0.95rem] font-bold sm:text-lg">
-                  {c.value}
-                </span>
-              </motion.a>
-            ))}
-          </Reveal>
+                <img
+                  src="/items/mailbox.PNG"
+                  alt="A hand-drawn red postbox marked Mail me"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-auto w-full select-none object-contain drop-shadow-[0_18px_18px_rgba(72,35,28,0.12)]"
+                />
+              </motion.div>
+            </Reveal>
+          </div>
         </div>
       </motion.div>
     </section>

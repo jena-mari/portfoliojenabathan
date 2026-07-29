@@ -100,7 +100,7 @@ function Postcard({ project, layout, scattered }) {
         animate={{ rotateY: flipped ? 180 : 0 }}
         transition={{ type: "spring", stiffness: 240, damping: 24 }}
       >
-        <div className="pc-face bg-cream-card rounded-sm shadow-postal-lg p-6 flex flex-col text-ink">
+        <div className="pc-face flex flex-col rounded-sm bg-cream-card p-3 text-ink shadow-postal-lg sm:p-6">
           <div className="relative flex-1 overflow-hidden border-[0.09375rem] border-ink-soft">
             {project.image ? (
               <img
@@ -117,20 +117,20 @@ function Postcard({ project, layout, scattered }) {
             )}
             <span className="absolute top-2 right-2 w-[1.875rem] h-[1.875rem] rounded-full border-[0.09375rem] border-gold-deep opacity-60 pointer-events-none" />
           </div>
-          <div className="flex justify-between items-baseline gap-4 mt-3.5">
-            <h3 className="font-display font-semibold text-[1.35rem] leading-none">{project.title}</h3>
-            <span className="font-mono text-[0.6875rem] text-ink-soft text-right">{project.tag}</span>
+          <div className="mt-2 flex items-baseline justify-between gap-2 sm:mt-3.5 sm:gap-4">
+            <h3 className="font-display text-base font-semibold leading-none sm:text-[1.35rem]">{project.title}</h3>
+            <span className="text-right font-mono text-[0.55rem] text-ink-soft sm:text-[0.6875rem]">{project.tag}</span>
           </div>
           <span className="font-mono text-[0.6875rem] text-pink-deep mt-1.5">{project.role}</span>
         </div>
 
-        <div className="pc-face pc-face-back contact-back rounded-sm shadow-postal-lg p-6 text-ink">
+        <div className="pc-face pc-face-back contact-back rounded-sm p-3 text-ink shadow-postal-lg sm:p-6">
           <div className="flex h-full gap-0">
-            <div className="ruled-lines flex-[1.75] overflow-hidden pr-4 font-sans text-[0.875rem] leading-[1.5rem] text-ink-soft sm:text-[0.9375rem] sm:leading-[1.625rem]">
+            <div className="ruled-lines flex-[1.75] overflow-hidden pr-2 font-sans text-[0.65rem] leading-[1rem] text-ink-soft sm:pr-4 sm:text-[0.9375rem] sm:leading-[1.625rem]">
               {project.message}
             </div>
-            <div className="flex-1 pl-3.5 flex flex-col justify-between">
-              <div className="w-[2.375rem] h-[2.875rem] border-[0.09375rem] border-dashed border-ink-soft ml-auto mb-2 flex items-center justify-center text-center font-mono text-[0.46875rem] text-ink-soft leading-tight">
+            <div className="flex flex-1 flex-col justify-between pl-2 sm:pl-3.5">
+              <div className="mb-1 ml-auto flex h-8 w-7 items-center justify-center border-[0.09375rem] border-dashed border-ink-soft text-center font-mono text-[0.4rem] leading-tight text-ink-soft sm:mb-2 sm:h-[2.875rem] sm:w-[2.375rem] sm:text-[0.46875rem]">
                 postmark
               </div>
               <div className="flex flex-col gap-1.5">
@@ -143,7 +143,7 @@ function Postcard({ project, layout, scattered }) {
                     onPointerDown={(e) => e.stopPropagation()}
                     onPointerUp={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
-                    className="font-mono text-[0.625rem] border border-ink rounded-full px-2.5 py-1.5 inline-flex items-center gap-1.5 self-start transition-colors duration-200 hover:bg-ink hover:text-cream-card"
+                    className="inline-flex self-start rounded-full border border-ink px-2 py-1 font-mono text-[0.5rem] transition-colors duration-200 hover:bg-ink hover:text-cream-card sm:px-2.5 sm:py-1.5 sm:text-[0.625rem]"
                   >
                     {link.label} →
                   </a>

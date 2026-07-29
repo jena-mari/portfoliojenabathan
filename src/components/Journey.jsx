@@ -153,7 +153,7 @@ export default function Journey() {
       id="journey"
       data-scroll-section
       data-section-color="#F6CFDA"
-      className="overflow-hidden py-24 font-google sm:py-28"
+      className="overflow-hidden py-20 font-google sm:py-28"
     >
       <div className="max-w-[73.75rem] mx-auto px-6 sm:px-8">
         <Reveal className="text-center mb-14 sm:mb-16">

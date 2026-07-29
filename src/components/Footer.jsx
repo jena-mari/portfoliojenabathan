@@ -7,7 +7,7 @@ export default function Footer() {
       >
         ✈ back to the top
       </a>
-      <div>made with care (and probably too much coffee) — jena bathan, 2026</div>
+      <div>made with love, matcha, and coffee. — jena bathan, 2026</div>
     </footer>
   )
 }

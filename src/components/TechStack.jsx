@@ -34,8 +34,8 @@ const restAngles = [-2.5, 1.5, -1.8, 2, -1.2, 2.4]
 
 function Card({ cat }) {
   return (
-    <div className="group relative rounded-[1.75rem] p-7 border border-white/40 bg-white/20 backdrop-blur-xl shadow-[0_0.5rem_2rem_rgba(31,41,55,0.15)] transition-colors duration-500 hover:bg-white/95 hover:border-white/70">
-      <h3 className="font-google font-bold uppercase tracking-wide text-xl mb-4 text-white transition-colors duration-500 group-hover:text-ink">
+    <div className="group relative rounded-[1.75rem] border border-white/40 bg-white/20 p-5 backdrop-blur-xl shadow-[0_0.5rem_2rem_rgba(31,41,55,0.15)] transition-colors duration-500 hover:border-white/70 hover:bg-white/95 sm:p-7">
+      <h3 className="mb-4 font-google text-lg font-bold uppercase tracking-wide text-white transition-colors duration-500 group-hover:text-ink sm:text-xl">
         {cat.title}
       </h3>
       <div className="flex flex-wrap gap-2">
@@ -58,11 +58,11 @@ export default function TechStack() {
       id="stack"
       data-scroll-section
       data-section-color="#CCE6FC"
-      className="relative min-h-screen py-28 overflow-hidden"
+      className="relative min-h-screen overflow-hidden py-20 sm:py-28"
     >
       <Clouds />
 
-      <div className="max-w-[73.75rem] mx-auto px-8 relative z-10">
+      <div className="relative z-10 mx-auto max-w-[73.75rem] px-5 sm:px-8">
         <Reveal className="mb-14">
           <h2 className="font-advercase font-bold text-ink text-[clamp(2.6rem,6vw,4.4rem)] leading-none drop-shadow-[0.1875rem_0.25rem_0_rgba(0,0,0,0.12)]">
             my tech stack
@@ -72,7 +72,7 @@ export default function TechStack() {
           </p>
         </Reveal>
 
-        <div className="flex flex-col gap-16">
+        <div className="flex flex-col gap-12 sm:gap-16">
           {rows.map((row, rowIndex) => (
             <ClotheslineRow
               key={rowIndex}

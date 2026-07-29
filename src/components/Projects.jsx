@@ -264,9 +264,9 @@ export default function Projects() {
       ref={sectionRef}
       data-scroll-section
       data-section-color="#91A05A"
-      className="relative overflow-hidden py-28 text-paper"
+      className="relative overflow-hidden py-20 text-paper sm:py-28"
     >
-      <div className="relative mx-auto max-w-[84rem] px-6 sm:px-8 lg:grid lg:grid-cols-[17rem_1fr] lg:gap-14 xl:grid-cols-[18rem_1fr] xl:gap-16">
+      <div className="relative mx-auto max-w-[84rem] px-5 sm:px-8 lg:grid lg:grid-cols-[17rem_1fr] lg:gap-14 xl:grid-cols-[18rem_1fr] xl:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start mb-14 lg:mb-0">
           <Reveal className="max-w-xl lg:max-w-none" direction="left">
             <span className="kicker-dash font-mono text-xs text-twine flex items-center gap-2.5 mb-3.5">
