@@ -27,7 +27,7 @@ const stamps = [
   {
     tag: "HACKATHONS",
     title: "Hackathon winner + competitor",
-    body: "Competed across multiple Google Developer Groups (GDG) hackathons and placed 3rd at the Lyra × OpenAI × January Capital × Relevance AI Hackathon 2026.",
+    body: "Competed across multiple hackathons, and notably placed 3rd at the Lyra × OpenAI × January Capital × Relevance AI Hackathon 2026.",
     photo: "/items/milestones/hackathon.png",
     accent: "#e2734f",
   },
@@ -93,7 +93,7 @@ function VisaStamp({ stamp, id }) {
 function PassportPage({ stamp, id, side }) {
   return (
     <div
-      className={`relative flex flex-col items-center px-6 py-10 sm:px-10 sm:py-14 ${
+      className={`relative flex min-h-[32rem] flex-col items-center px-6 py-10 sm:min-h-[35rem] sm:px-10 sm:py-14 ${
         side === "left" ? "sm:rounded-l-2xl" : "sm:rounded-r-2xl"
       }`}
     >
