@@ -1,5 +1,17 @@
 export const projects = [
   {
+    title: "Sarge",
+    tag: "React · Tailwind",
+    role: "developer",
+    image: "/items/sarge.png",
+    message:
+      "A community renewable-energy prototype for Wollongong — helping solar contributors explore sharing spare energy, earning Sarge Credits, and tracking their community impact. Built with interactive dashboards and mock data to bring the idea to life.",
+    links: [
+      { label: "prototype", href: "https://sarge-ten.vercel.app/" },
+      { label: "code", href: "https://github.com/jena-mari/sarge" },
+    ],
+  },
+  {
     title: "Synapta",
     tag: "React · TypeScript",
     role: "lead frontend dev & ui/ux designer",
