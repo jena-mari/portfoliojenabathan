@@ -1,14 +1,26 @@
 export const projects = [
+    {
+    title: "Louminate",
+    tag: "JavaScript · Python · Algorithms",
+    role: "lead full-stack developer",
+    image: "/items/louminate.png",
+    message:
+      "Developed an AI-assisted product for a non-profit in Sydney to convert frontline case conversations into structured notes and suggested follow-up actions. The product flow includes speech transcription, AI summarisation and categorisation, CMS-style updates, and integration with Microsoft 365, all aligned with stakeholder requirements.",
+    links: [
+      { label: "demo", href: "https://louminate.base44.app/login" }
+    ],
+  },
   {
     title: "Sarge",
-    tag: "React · Tailwind",
-    role: "developer",
+    tag: "JavaScript · Python · Algorithms",
+    role: "full-stack developer",
     image: "/items/sarge.png",
     message:
       "A community renewable-energy prototype for Wollongong — helping solar contributors explore sharing spare energy, earning Sarge Credits, and tracking their community impact. Built with interactive dashboards and mock data to bring the idea to life.",
     links: [
-      { label: "prototype", href: "https://sarge-ten.vercel.app/" },
+      { label: "prototype", href: "https://sarge-ten.vercel.app/onboarding" },
       { label: "code", href: "https://github.com/jena-mari/sarge" },
+      { label: "algorithm", href: "https://github.com/jena-mari/sarge" },
     ],
   },
   {
