@@ -208,7 +208,7 @@ function GridPostcard({ project, index }) {
   }, [])
 
   return (
-    <div ref={wrapRef} className="break-inside-avoid mb-10 sm:mb-12 [perspective:1200px] relative">
+    <div ref={wrapRef} className="min-w-0 [perspective:1200px] relative">
       <div ref={tiltRef} data-reveal className="will-change-transform cursor-grab active:cursor-grabbing">
         <div style={{ transform: `rotate(${rot}deg)` }}>
           <Postcard project={project} />
@@ -296,7 +296,7 @@ export default function Projects() {
         </div>
 
         <div className="relative">
-          <div className="columns-1 sm:columns-2 gap-x-10 sm:gap-x-12 relative z-[2]">
+          <div className="grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 sm:gap-x-12 sm:gap-y-12 relative z-[2]">
             {projects.map((project, i) => (
               <GridPostcard key={project.title} project={project} index={i} />
             ))}

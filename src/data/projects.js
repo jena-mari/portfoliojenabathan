@@ -1,11 +1,35 @@
+// Keep projects newest first; the grid displays them left to right, then down.
 export const projects = [
-    {
+  {
+    title: "Courseo",
+    tag: "JavaScript · TypeScript · Python · LLMs",
+    role: "lead frontend engineer + backend debugging",
+    image: "/items/courseo.png",
+    message:
+      "Capstone project. Built an AI-powered, degree-aware academic planning platform using a microservices architecture and large language models (LLMs) to generate personalised study plans tailored to students’ degree requirements, academic progress, and goals.",
+    links: [
+      { label: "application", href: "https://courseo-frontend.onrender.com/" },
+      { label: "code", href: "https://github.com/jena-mari/courseo-frontend" },
+    ],
+  },
+  {
+    title: "Melloway",
+    tag: "JavaScript · Python · Route Optimisation",
+    role: "founder & full-stack developer",
+    image: "/items/melloway.png",
+    message:
+      "Building a Sydney-based app that transforms TikTok and Instagram discoveries into optimised itineraries, with a community feed for sharing, rating, and recreating outings tailored to users’ interests, budgets, and groups.",
+    links: [
+      { label: "demo", href: "https://melloway-one.vercel.app/" },
+    ],
+  },
+  {
     title: "Louminate",
     tag: "JavaScript · Python · Algorithms",
     role: "lead full-stack developer",
     image: "/items/louminate.png",
     message:
-      "Developed an AI-assisted product for a non-profit in Sydney to convert frontline case conversations into structured notes and suggested follow-up actions. The product flow includes speech transcription, AI summarisation and categorisation, CMS-style updates, and integration with Microsoft 365, all aligned with stakeholder requirements.",
+      "Developed an AI-assisted product for a Sydney non-profit to transform frontline conversations into structured notes and follow-up actions, integrating speech transcription, AI summarisation, categorisation, CMS updates, and Microsoft 365 to meet stakeholder needs.",
     links: [
       { label: "demo", href: "https://louminate.base44.app/login" }
     ],
@@ -79,15 +103,6 @@ export const projects = [
       { label: "code", href: "https://github.com/shakeelmahdhy/SyncUs" },
       { label: "prototype", href: "https://syncus-1.onrender.com/" },
     ],
-  },
-  {
-    title: "Courseo",
-    tag: "React · Tailwind",
-    role: "ui/ux designer & lead frontend dev",
-    image: "/items/courseo.png",
-    message:
-      "A microservice-based academic planner that uses LLMs to build personalised study plans for UOW students. Still in progress — this is the frontend so far, with full LLM integration landing later this year.",
-    links: [{ label: "code", href: "https://github.com/jena-mari/courseo-frontend" }],
   },
   {
     title: "Click&Cart",
