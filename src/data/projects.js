@@ -4,7 +4,7 @@ export const projects = [
     title: "Courseo",
     tag: "JavaScript · TypeScript · Python · LLMs",
     role: "lead frontend engineer + backend debugging",
-    image: "/items/courseo.png",
+    image: "/items/courseo1.png",
     message:
       "Capstone project. Built an AI-powered, degree-aware academic planning platform using a microservices architecture and large language models (LLMs) to generate personalised study plans tailored to students’ degree requirements, academic progress, and goals.",
     links: [
